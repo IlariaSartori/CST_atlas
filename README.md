@@ -1,2 +1,2 @@
-# CTS_atlas
+# CST_atlas
 Statistical methodology for generating an atlas of the CST (=Cortico-Spinal Tract)
