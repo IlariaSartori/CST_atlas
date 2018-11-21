@@ -68,7 +68,7 @@ get_streamlines_per_clusters_patient_list = function (features, n_patients) {
     cluster_patients_list_unpack = c(cluster_patients_list_unpack, cluster_patients_list[[j]])
   }
   return (cluster_patients_list_unpack) # In ordine di cluster e, all'interno del cluster, in ordine di paziente
-  return (cluster_patients_list)
+  # return (cluster_patients_list)
 }
 
 # Restituisce una lista di 2 elementi:
@@ -383,8 +383,8 @@ get_cluster_true_mean_indexes_healty = function(features_reduced,features_list_s
 
 
 # Date features_reduced e features_list_sxdx (solo pazienti sani) restituisce
-# una lista di 9 (cluster), dove ogni elemento è una lista di 20 componenti (pazienti), 
-# ognuno dei quali è una lista di 2 componenti:
+# una lista di 9 (cluster), dove ogni elemento e' una lista di due elementi (lhs, rhs), 
+# ognuno dei quali e' una lista di 2 componenti:
 # - idx: Vettore di indici delle streamline reale (rispetto a un paziente e alla side) più vicina (distanza L2 delle features)
 #        alla streamline fittizia media di quel cluster per quel paziente 
 # - patient: Vettore dei pazienti

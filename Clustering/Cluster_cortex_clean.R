@@ -25,7 +25,7 @@ cst_list = c(list(cst00), cst_list)
 
 source("helper_cluster.R")
 
-num_streamline_patients = map_dbl (cst_list, num_of_streamline_patient)  
+num_streamline_patients = map_dbl (cst_list, num_of_streamline_patient)   # !! Senza outliers!!!!! 
 # Per ogni paziente somma numero streamline destro+sinistro
 
 ################################################################################################
@@ -224,6 +224,7 @@ plot_from_indexes (cst_list_healty, indexes_plot2)
 ######################################################################################
 load("../RData/features_patients_reduced_9_6.RData")
 load("../RData/features_patients_9_6.RData")
+load("../RData/tensor_list.RData")
 
 source("helper_cluster.R")
 source("helper_grafico3.R")
@@ -234,8 +235,38 @@ load ("../RData/outliers.RData")    # Indici outliers
 # outliers_dx lista di 20 vettori contenenti gli indici delle streamline individuate come outliers 
 # nel tratto dx dei 20 pazienti
 
+# NEW: 21/11/18 (per ora non esiste) 
+load ("../RData/list_tensors.RData") # pensavo di usarla per recuperare il numero originale di streamlines prima di
+                                    # rimuovere gli outliers
+# HP: lista di 20/21 elementi (dipende da malato): 
+# - ciascun paziente ha due campi (lhs, rhs), ciascuno dei quali e' a sua volta una lista di lunghezza (n_stream_left, n_stream_right)
+#   che a sua volta e' una lista di 50 tensori (uno per punto)
+
+#NEW: 20/11/18
+# Da testare
+num_stream_pat_side_df =  do.call(rbind.data.frame, map(list_tensors, num_of_streamline_from_tensor_list_cst))
+num_stream_pat_side = list( lhs = as.list(num_stream_pat_side_df[,1]),  rhs = as.list(num_stream_pat_side_df[,2]))
+####
+
 old_indexes = find_original_index_representative(indexes_plot1, outliers_sx, outliers_dx, num_stream_pat_side)
 list_mean_tensors = mean_tensors(old_indexes, list_tensors)
 
 
-  
+# PROVA
+
+# indexes_plot1_tmp = indexes_plot1
+# for(i in 1:9){
+#   for(j in 1:2){
+#     indexes_plot1_tmp[[i]][[j]]$idx = indexes_plot1_tmp[[i]][[j]]$idx[c(1,2)]
+#     indexes_plot1_tmp[[i]][[j]]$patient = indexes_plot1_tmp[[i]][[j]]$patient[c(1,2)]
+#     
+#   }
+# }
+# 
+# 
+# outliers_sx_tmp = outliers_sx[c(1,2)]
+# outliers_dx_tmp = outliers_dx[c(1,2)]
+# 
+# 
+# old_indexes = find_original_index_representative(indexes_plot1_tmp, outliers_sx_tmp, outliers_dx_tmp, num_stream_pat_side)
+
