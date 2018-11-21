@@ -386,9 +386,13 @@ num_of_streamline_tract = function (tract) {
   return (length(tract$data))
 }
 
+# NEW: 20/11/18 (non usata)
 num_of_streamline_tract_sx_dx = function (tract_sx_dx) {  # tract_sx_dx[[1]]= tract_left  tract_sx_dx[[2]]= tract_right
   return (c(length(tract_sx_dx[[1]]$data), length(tract_sx_dx[[2]]$data)))
 }
 
-
+# NEW: 21/11/18 
+num_of_streamline_from_tensor_list_cst = function (tensor_list_cst) { 
+  return (c(length(tensor_list_cst$lhs), length(tensor_list_cst$rhs)))
+}
 
