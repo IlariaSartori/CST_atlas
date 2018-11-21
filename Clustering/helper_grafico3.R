@@ -7,16 +7,17 @@ shift_index = function(patient, idx_streamline, idx_ouliers_patient, num_stream_
   return (data.frame(idx, patient))
 }
 
+# NEW: 21/11/18 (corretto uso pmap_dfr)
 find_original_index_representative_cluster = function (indexes_plot1_cluster, idx_outlier_left, idx_outlier_right, num_stream_pat_side) {
   ## Left
   patient_left = as.list(indexes_plot1_cluster$lhs$patient)
   idx_left = as.list(indexes_plot1_cluster$lhs$idx)
-  left_shifted = pmap_dfr(patient_left, idx_left, idx_outlier_left, num_stream_pat_side$lhs, shift_index)
+  left_shifted = pmap_dfr(list(patient_left, idx_left, idx_outlier_left, num_stream_pat_side$lhs), shift_index)
   
   ## Right
   patient_right = as.list(indexes_plot1_cluster$rhs$patient)
   idx_right = as.list(indexes_plot1_cluster$rhs$idx)
-  right_shifted = pmap_dfr(patient_right, idx_right, idx_outlier_right, num_stream_pat_side$rhs, shift_index)
+  right_shifted = pmap_dfr(list(patient_right, idx_right, idx_outlier_right, num_stream_pat_side$rhs), shift_index)
   
   return (list(lhs = list(idx = left_shifted$idx, patient = left_shifted$patient),
                rhs= list(idx = right_shifted$idx, patient = right_shifted$patient)))
