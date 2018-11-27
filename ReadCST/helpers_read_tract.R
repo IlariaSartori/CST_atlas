@@ -18,7 +18,7 @@ remove_point_outliers = function(stream, l_rd = 0.00001, u_rd = 0.001, l_ad = 0.
   if(!is_empty(idx)){
     stream = stream[-idx,]
   }
-  return(stream)
+  return(streamline_cast(stream))
 }
 
 # Non posso usare il constructor di tract perch? non ? aggiornato
@@ -31,10 +31,15 @@ divide_cst = function(cst){
   cst_right$Streamlines <- cst$Streamlines[map_lgl(cst$Streamlines, ~ (.$x[1] > 0))]
   # cst_left = tract(name = cst$TractName[1], case = cst$PatientId[1], scan = cst$ScanId[1], side = "left", data = data_left) 
   # cst_right = tract(name = cst$name[1], case = cst$case[1], scan = cst$scan[1], side = "right", data = data_right) 
+  cst_left$Streamlines <- map(cst_left$Streamlines, streamline_cast)
+  cst_right$Streamlines <- map(cst_right$Streamlines, streamline_cast)
   
   return (list(lhs = cst_left, rhs = cst_right))
 }
 
+streamline_cast = function(stream) {
+  return(streamline(s=stream$s, x=stream$x, y=stream$y, z=stream$z, t=stream$t))
+}
 
 library(dplyr)
 
