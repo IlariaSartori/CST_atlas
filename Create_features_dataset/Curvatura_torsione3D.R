@@ -173,6 +173,7 @@ get_functional_representation_lambda_fixed <- function(streamline,norder=8, Lfdo
 
 
 # VARIABLE LAMBDA
+# Choose the optimum lambda according to generalized cross validation
 fda3D_evaluate_lambda = function (streamline, m=8, Lfdobj=4, lambda0=10) {
   cat("o")
   s <- streamline$s
