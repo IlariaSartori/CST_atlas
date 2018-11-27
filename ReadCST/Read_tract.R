@@ -6,9 +6,10 @@ cst = read_csv("/06007", case = "007", scan = "001") # Controllare i suoi rdata
 ###########  Pulizia rispetto a RD e AD
 cst$Streamlines = map(cst$Streamlines, remove_point_outliers) 
 
-###########  Outlier detection
+###########  Divide left and right
 cst_divided = divide_cst(cst)
 
+###########  Outlier detection
 outliers_left = get_outliers_distance(cst_divided$lhs)
 cst_divided$lhs$Streamlines = cst_divided$lhs$Streamlines[-outliers_left]
 
