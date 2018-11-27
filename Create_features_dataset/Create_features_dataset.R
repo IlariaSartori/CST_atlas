@@ -1,44 +1,61 @@
 library(tidyverse)
 library(devtools)
 library(readr)
-library(fdatractography)
 library(boot)
 library(gtools)
 library(Gmedian)
 library(sfsmisc)
 library(cluster)
+library(fiber)
 library(fda)
 
 source("utility_functions.R")
-source("create_dataset.R")
 # source("tensor_variables.R")
-setwd("C:/Users/Vale/Google Drive/Progetto_StatApp/File per paper/Rdata_tratti_riparametrizzati_no_outliers")
-setwd("/Users/ILARIASARTORI/Google drive/Progetto_StatApp/File per paper/RData_tratti_riparametrizzati_no_outliers")
-setwd("C:/Users/User/Google Drive/Progetto_StatApp/File per paper/RData_tratti_riparametrizzati_no_outliers")
+# setwd("C:/Users/Vale/Google Drive/Progetto_StatApp/File per paper/Rdata_tratti_riparametrizzati_no_outliers")
+# setwd("/Users/ILARIASARTORI/Google drive/Progetto_StatApp/File per paper/RData_tratti_riparametrizzati_no_outliers")
+# setwd("C:/Users/User/Google Drive/Progetto_StatApp/File per paper/RData_tratti_riparametrizzati_no_outliers")
 
 
-load("cst00_rep_no_outliers.RData")
+# load("cst00_rep_no_outliers.RData")
 load("cst01_rep_no_outliers.RData")
-load("cst02_rep_no_outliers.RData")
-load("cst03_rep_no_outliers.RData")
-load("cst04_rep_no_outliers.RData")
-load("cst05_rep_no_outliers.RData")
-load("cst06_rep_no_outliers.RData")
-load("cst07_rep_no_outliers.RData")
-load("cst08_rep_no_outliers.RData")
-load("cst09_rep_no_outliers.RData")
-load("cst10_rep_no_outliers.RData")
-load("cst11_rep_no_outliers.RData")
-load("cst12_rep_no_outliers.RData")
-load("cst13_rep_no_outliers.RData")
-load("cst14_rep_no_outliers.RData")
-load("cst15_rep_no_outliers.RData")
-load("cst16_rep_no_outliers.RData")
-load("cst17_rep_no_outliers.RData")
-load("cst18_rep_no_outliers.RData")
-load("cst19_rep_no_outliers.RData")
-load("cst20_rep_no_outliers.RData")
+# load("cst02_rep_no_outliers.RData")
+# load("cst03_rep_no_outliers.RData")
+# load("cst04_rep_no_outliers.RData")
+# load("cst05_rep_no_outliers.RData")
+# load("cst06_rep_no_outliers.RData")
+# load("cst07_rep_no_outliers.RData")
+# load("cst08_rep_no_outliers.RData")
+# load("cst09_rep_no_outliers.RData")
+# load("cst10_rep_no_outliers.RData")
+# load("cst11_rep_no_outliers.RData")
+# load("cst12_rep_no_outliers.RData")
+# load("cst13_rep_no_outliers.RData")
+# load("cst14_rep_no_outliers.RData")
+# load("cst15_rep_no_outliers.RData")
+# load("cst16_rep_no_outliers.RData")
+# load("cst17_rep_no_outliers.RData")
+# load("cst18_rep_no_outliers.RData")
+# load("cst19_rep_no_outliers.RData")
+# load("cst20_rep_no_outliers.RData")
 
+#########################################################################################
+################################ CURVATURA TORSIONE SUE #################################
+#########################################################################################
+source("create_dataset_new.R")
+lambda_opt = 3.04284112980894
+
+cst01__left_features = create_dataset_new (cst01$lhs, "left", standardized = T) 
+cst01__right_features = create_dataset_new (cst01$rhs, "right", standardized = T)
+
+save(cst01__left_features, cst01__right_features, file = "cst_01_features.RData")
+
+
+
+
+#########################################################################################
+################################ CURVATURA TORSIONE NOSTRE ##############################
+#########################################################################################
+source("create_dataset.R")
 # Evaluate lambda_opt
 # lambda_opt_vec = map_dbl(cst01_left$data, fda3D_evaluate_lambda)  
 # lambda_opt=median(lambda_opt_vec)   
