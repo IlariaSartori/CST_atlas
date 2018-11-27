@@ -1,3 +1,5 @@
+source("helpers_read_tract.R")
+
 ###########  Lettura tratto
 cst = read_csv("/06007", case = "007", scan = "001") # Controllare i suoi rdata
 
