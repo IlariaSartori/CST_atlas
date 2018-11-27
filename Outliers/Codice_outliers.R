@@ -1,88 +1,88 @@
 source ("../Create_features_dataset/utility_functions.R")
 source("helper_outliers.R")
 
-##################################################################################
+###############################################################################
 #######                  GRAFICI                      #########################
-##################################################################################
-setwd("/Users/ILARIASARTORI/Google drive/Progetto_StatApp/File per paper/RData_tratti_riparametrizzati")
-load("cst10_reparametrized.RData")
-length(cst10_left$data)
-length(cst10_right$data)
+###############################################################################
 
-# setwd("/Users/ILARIASARTORI/Google drive/Progetto_StatApp/File per paper/RData_tratti_riparametrizzati_no_outliers")
-# load("cst10_rep_no_outliers.RData")
-# length(cst10_left$data)
-# length(cst10_right$data)
+### 1) Read tract and remove points whith RD and AD out of range
+source("../ReadCST/helpers_read_tract.R")
 
-tract = cst01_left
+# Lettura tratto
+setwd("/Users/ILARIASARTORI/Desktop/")
+cst = read_csv("/06001", case = "001", scan = "001") 
 
-####################################################################
-## far girare il corpo di GET_OUTLIERS_DISTANCE
+# Pulizia rispetto a RD e AD
+cst$Streamlines = map(cst$Streamlines, remove_point_outliers) 
+
+# Divide left and right
+cst = divide_cst(cst)
+
+### 2) Plots
+tract = cst$lhs
+
+####################################################################################
+##################################### DISTANCE #####################################
+####################################################################################
+outliers = get_outliers_distance(tract, separate_sp_bar=T)
+outliers.sp_xy = outliers$outliers.sp_xy 
+outliers.sp_yz = outliers$outliers.sp_yz 
+outliers.bar_yz = outliers$outliers.bar_yz 
+outliers.bar_xy = outliers$outliers.bar_xy
 
 library(rgl)
-open3d()
 primo=1
-for (i in 1:length(tract$data)) {
-  x= tract$data[[i]]$x
-  y= tract$data[[i]]$y
-  z= tract$data[[i]]$z
-  n=nrow(tract$data[[i]])
-  
-  X=cbind(x,y,z)
-  
-  color = NULL
-  for (j in 1:n) {
-    if (is.element(i, unique(c(outliers.bar_yz, outliers.bar_xy))))
-      color[j]= 'green'
-    else if (is.element(i, unique(c(outliers.sp_xy, outliers.sp_yz))))
-      color[j]= 'blue'
-    else
-      color[j]= 'gray'
-  }
-  
-  lines3d(X[which(color=='gray'),], asp=1, size=0.5, col="gray") 
-  lines3d(X[which(color=='blue'),], asp=1, size=0.5, col="blue") 
-  lines3d(X[which(color=='green'),], asp=1, size=0.5, col="green") 
-  
+for (i in 1:length(tract$Streamlines)) {
   if (primo) {
+    if (is.element(i, unique(c(outliers.bar_yz, outliers.bar_xy)))) {
+      plot(tract$Streamlines[[i]], col='green')
+    }
+    else if (is.element(i, unique(c(outliers.sp_xy, outliers.sp_yz)))){
+      plot(tract$Streamlines[[i]], col='blue')
+    }
+    else
+      plot(tract$Streamlines[[i]], col='gray')
     axes3d()
     title3d(xlab='x', ylab='y', zlab='z')
     primo=0
   }
+  if (is.element(i, unique(c(outliers.bar_yz, outliers.bar_xy)))) {
+    plot(tract$Streamlines[[i]], col='green', new_window=FALSE)
+  }
+  else if (is.element(i, unique(c(outliers.sp_xy, outliers.sp_yz)))){
+    plot(tract$Streamlines[[i]], col='blue', new_window=FALSE)
+  }
+  else
+    plot(tract$Streamlines[[i]], col='gray', new_window=FALSE)
 }
+
 
 # Per vedere bene la differenza, fare anche un altro grafico in cui si evidenziano le 
 # streamline solo classificate outliers per il baricentro (basta invertire la classificazione
 # per colore nell'if)
-open3d()
 primo=1
-for (i in 1:length(cst01_left$data)) {
-  x= cst01_left$data[[i]]$x
-  y= cst01_left$data[[i]]$y
-  z= cst01_left$data[[i]]$z
-  n=nrow(cst01_left$data[[i]])
-  
-  X=cbind(x,y,z)
-  
-  color = NULL
-  for (j in 1:n) {
-    if (is.element(i, unique(c(outliers.sp_xy, outliers.sp_yz))))
-      color[j]= 'blue'
-    else if (is.element(i, unique(c(outliers.bar_yz, outliers.bar_xy))))
-      color[j]= 'green'
-    else
-      color[j]= 'gray'
-  }
-  
-  lines3d(X[which(color=='gray'),], asp=1, size=0.5, col="gray") 
-  lines3d(X[which(color=='blue'),], asp=1, size=0.5, col="blue") 
-  lines3d(X[which(color=='green'),], asp=1, size=0.5, col="green") 
-  
+for (i in 1:length(tract$Streamlines)) {
   if (primo) {
+    if (is.element(i, unique(c(outliers.sp_xy, outliers.sp_yz)))){
+      plot(tract$Streamlines[[i]], col='blue')
+    }
+    else if (is.element(i, unique(c(outliers.bar_yz, outliers.bar_xy)))) {
+      plot(tract$Streamlines[[i]], col='green')
+    }
+    else
+      plot(tract$Streamlines[[i]], col='gray')
     axes3d()
     title3d(xlab='x', ylab='y', zlab='z')
     primo=0
   }
+  if (is.element(i, unique(c(outliers.sp_xy, outliers.sp_yz)))){
+    plot(tract$Streamlines[[i]], col='blue', new_window=FALSE)
+  }
+  else if (is.element(i, unique(c(outliers.bar_yz, outliers.bar_xy)))) {
+    plot(tract$Streamlines[[i]], col='green', new_window=FALSE)
+  }
+  else
+    plot(tract$Streamlines[[i]], col='gray', new_window=FALSE)
 }
 
 # Mi sembrerebbe che le streamline outliers dal punto di vista della spatial median siano
@@ -92,84 +92,64 @@ for (i in 1:length(cst01_left$data)) {
 # Le streamline outliers solo per il baricentro invece forse sono quelle che hanno anche il tronco un po'
 # spostato
 
-####################################################################
-## far girare il corpo di GET_OUTLIERS_DEPTH 
-library(rgl)
-open3d()
+####################################################################################
+##################################### DEPTH #####################################
+####################################################################################
+library(fields)
+outliers = get_outliers_depth(tract, separate_sp_bar=T)
+outliers_depth_Barycenter = outliers$outliers_depth_Barycenter
+outliers_depth_Median = outliers$outliers_depth_Median
+
 primo=1
-for (i in 1:length(tract$data)) {
-  x= tract$data[[i]]$x
-  y= tract$data[[i]]$y
-  z= tract$data[[i]]$z
-  n=nrow(tract$data[[i]])
-  
-  X=cbind(x,y,z)
-  
-  color = NULL
-  for (j in 1:n) {
-    if (is.element(i, outliers_depth_Barycenter))
-      color[j]= 'green'
-    else if (is.element(i, outliers_depth_Median))
-      color[j]= 'blue'
-    else
-      color[j]= 'gray'
-  }
-  
-  lines3d(X[which(color=='gray'),], asp=1, size=0.5, col="gray") 
-  lines3d(X[which(color=='blue'),], asp=1, size=0.5, col="blue") 
-  lines3d(X[which(color=='green'),], asp=1, size=0.5, col="green") 
-  
+for (i in 1:length(tract$Streamlines)) {
   if (primo) {
+    if (is.element(i, outliers_depth_Barycenter)){
+      plot(tract$Streamlines[[i]], col='green')
+    }
+    else if (is.element(i, outliers_depth_Median)) {
+      plot(tract$Streamlines[[i]], col='blue')
+    }
+    else
+      plot(tract$Streamlines[[i]], col='gray')
     axes3d()
     title3d(xlab='x', ylab='y', zlab='z')
     primo=0
   }
+  if (is.element(i, outliers_depth_Barycenter)){
+    plot(tract$Streamlines[[i]], col='green', new_window=FALSE)
+  }
+  else if (is.element(i, outliers_depth_Median)) {
+    plot(tract$Streamlines[[i]], col='blue', new_window=FALSE)
+  }
+  else
+    plot(tract$Streamlines[[i]], col='gray', new_window=FALSE)
 }
 
-
-##################################################################################
-#######                  SALVATAGGIO                      #########################
-##################################################################################
-# setwd("C:/Users/Vale/Google Drive/Progetto_StatApp/File per paper/Rdata_tratti_riparametrizzati")
-setwd("C:/Users/User/Google Drive/Progetto_StatApp/File per paper/Rdata_tratti_riparametrizzati")
-
-setwd("/Users/ILARIASARTORI/Google drive/Progetto_StatApp/File per paper/RData_tratti_riparametrizzati")
-load("cst16_reparametrized.RData")
-
-######## DISTANCE - BASED
-# Left
-outliers_sx = get_outliers_distance(cst16_left)
-cst16_left$data = cst16_left$data[-outliers_sx]
-# length(cst16_left$data) 
-# Right
-outliers_dx = get_outliers_distance(cst16_right)
-cst16_right$data = cst16_right$data[-outliers_dx]
-
-######## DEPTH - BASED
-# Left
-# outliers_sx = get_outliers_depth(cst04_left)
-# cst04_left$data = cst04_left$data[-outliers_sx]
-# # length(cst04_left$data) 
-# # Right
-# outliers_dx = get_outliers_depth(cst04_right)
-# cst04_right$data = cst04_right$data[-outliers_dx]
-
-
-# setwd("C:/Users/Vale/Google Drive/Progetto_StatApp/File per paper/Rdata_tratti_riparametrizzati_no_outliers")
-setwd("/Users/ILARIASARTORI/Google drive/Progetto_StatApp/File per paper/RData_tratti_riparametrizzati_no_outliers")
-setwd("/Users/ILARIASARTORI/Desktop")
-save(cst16_left, cst16_right, file = "cst16_rep_no_outliers.RData")
-
-## Verifica
-# load("cst04_rep_no_outliers.RData")
-# length(cst04_left$data)
-# 
-# rm(cst01_left)
-# rm(cst01_right)
-# rm(cst02_left)
-# rm(cst02_right)
-# rm(cst03_left)
-# rm(cst03_right)
-# rm(cst04_left)
-# rm(cst04_right)
+# Per vedere bene la differenza, fare anche un altro grafico in cui si evidenziano le 
+# streamline solo classificate outliers per il baricentro (basta invertire la classificazione
+# per colore nell'if)
+primo=1
+for (i in 1:length(tract$Streamlines)) {
+  if (primo) {
+    if (is.element(i, outliers_depth_Median)) {
+      plot(tract$Streamlines[[i]], col='blue')
+    }
+    else if (is.element(i, outliers_depth_Barycenter)){
+      plot(tract$Streamlines[[i]], col='green')
+    }
+    else
+      plot(tract$Streamlines[[i]], col='gray')
+    axes3d()
+    title3d(xlab='x', ylab='y', zlab='z')
+    primo=0
+  }
+  if (is.element(i, outliers_depth_Median)) {
+    plot(tract$Streamlines[[i]], col='blue', new_window=FALSE)
+  }
+  else if (is.element(i, outliers_depth_Barycenter)){
+    plot(tract$Streamlines[[i]], col='green', new_window=FALSE)
+  }
+  else
+    plot(tract$Streamlines[[i]], col='gray', new_window=FALSE)
+}
 

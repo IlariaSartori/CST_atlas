@@ -9,7 +9,7 @@ source("../Create_features_dataset/utility_functions.R")
 # In particular for every streamline, the barycenter is projected on the xy plane (and then on the yz). 
 # On this plane(s) outliers are identified using the basic distance-based approach (Knorr and Ng 1997)
 # Then the same procedure is repeated using the spatial median of the streamlines
-get_outliers_distance <- function (tract_side, percentage=0.01)
+get_outliers_distance <- function (tract_side, percentage=0.01, separate_sp_bar = F)
 {
   
   
@@ -103,8 +103,11 @@ get_outliers_distance <- function (tract_side, percentage=0.01)
   
   outliers.bar_yz = which(card_neighbourhood_bar_yz/(n-1) < percentage)
   
+  if (separate_sp_bar) {
+    return(list(outliers.sp_xy=outliers.sp_xy, outliers.sp_yz=outliers.sp_yz, 
+                outliers.bar_yz=outliers.bar_yz, outliers.bar_xy=outliers.bar_xy))
+  }
   outliers = unique(c(outliers.sp_xy, outliers.sp_yz, outliers.bar_yz, outliers.bar_xy))
-  
   return (sort(outliers))
 }
 
@@ -176,7 +179,7 @@ idx_outliers <- function( dataset, outliers)
 # In particular for every streamline, the barycenter is projected on the xy plane (and then on the yz). 
 # On this plane(s) outliers are identified using the basic distance-based approach (Knorr and Ng 1997)
 # Then the same procedure is repeated using the spatial median of the streamlines
-get_outliers_depth <- function (tract_side){
+get_outliers_depth <- function (tract_side, separate_sp_bar = F){
   
   #### Spatial median
   
@@ -246,6 +249,12 @@ get_outliers_depth <- function (tract_side){
   
   outliers_depth_Barycenter = sort(unique(c(idx1, idx2, idx4, idx5, idx6, idx7)))
   
+  if(separate_sp_bar) {
+    return (list(outliers_depth_Barycenter = outliers_depth_Barycenter, 
+                 outliers_depth_Median = outliers_depth_Median))
+  }
+  
   return (sort(unique(c(outliers_depth_Barycenter, outliers_depth_Median))))
   
 }
+
