@@ -1,3 +1,0 @@
-cst10_rep_no_outliers.RData filter=lfs diff=lfs merge=lfs -text
-cst12_rep_no_outliers.RData filter=lfs diff=lfs merge=lfs -text
-cst16_rep_no_outliers.RData filter=lfs diff=lfs merge=lfs -text
