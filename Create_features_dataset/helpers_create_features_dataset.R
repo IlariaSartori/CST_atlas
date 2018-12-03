@@ -1,4 +1,26 @@
-compute_streamline_features = function (streamline) {
+# MD_info = list (n_sector, c(interior break points)) 
+# intervals: [break_points[i], break_points[i+1])
+
+create_dataset_new = function(tract, side_label, MD_info, RD_info, AD_info, FA_info, standardized = T)
+{
+  features = map_df(tract$Streamlines, compute_streamline_features, MD_info, RD_info, AD_info, FA_info)
+  
+  n = length(tract$Streamlines)
+  patient = rep (as.numeric(tract$PatientId), n)
+  side = rep(side_label,n)
+  
+  if (standardized == T){
+    features = scale(features)
+    features = as.data.frame(features)
+  }
+  
+  features = mutate(features, side, patient)
+  
+  return(features)
+}
+
+
+compute_streamline_features = function (streamline, MD_info, RD_info, AD_info, FA_info) {
   # curv_torsNOSTRA = get_curvature_torsion_fda3D_lambda_fixed(streamline, lambda=lambda_opt)
   # Curvature
   curvature = get_curvature(streamline)$curvature
@@ -38,28 +60,11 @@ compute_streamline_features = function (streamline) {
   z_SpMed = spatial_median[3]
   dist_cent = norm_vec2(t(barycenter-spatial_median))
   
-  MD_sectors = MD_sectors(streamline)
-  RD_sectors = RD_sectors(streamline)
-  AD_sectors = AD_sectors(streamline)
-  FA_sectors = FA_sectors(streamline)
+  MD_sectors = diffusion_index_sectors(streamline, "md", MD_info)
+  RD_sectors = diffusion_index_sectors(streamline, "rd", RD_info)
+  AD_sectors = diffusion_index_sectors(streamline, "ad", AD_info)
+  FA_sectors = diffusion_index_sectors(streamline, "fa", FA_info)
   
-  FA_sector1 = FA_sectors[1]
-  FA_sector2 = FA_sectors[2]
-  FA_sector3 = FA_sectors[3]
-  FA_sector4 = FA_sectors[4]
-  FA_sector5 = FA_sectors[5]
-  MD_sector1 = MD_sectors[1]
-  MD_sector2 = MD_sectors[2]
-  MD_sector3 = MD_sectors[3]
-  MD_sector4 = MD_sectors[4]
-  RD_sector1 = RD_sectors[1]
-  RD_sector2 = RD_sectors[2]
-  RD_sector3 = RD_sectors[3]
-  RD_sector4 = RD_sectors[4]
-  AD_sector1 = AD_sectors[1]
-  AD_sector2 = AD_sectors[2]
-  AD_sector3 = AD_sectors[3]
-  AD_sector4 = AD_sectors[4]
   
   return(data.frame(curv_max, curv_mean, curv_sd, 
                     # curv_maxNOSTRA, curv_meanNOSTRA, curv_sdNOSTRA,
@@ -69,71 +74,41 @@ compute_streamline_features = function (streamline) {
                     # tors_maxDIFF, tors_meanDIFF, tors_sdDIFF,
                     clength, elength, sinuosity,
                     x_barycenter, y_barycenter, z_barycenter,
-                    x_SpMed, y_SpMed, z_SpMed, 
+                    x_SpMed,  y_SpMed,  z_SpMed, 
                     dist_cent,
-                    FA_sector1, FA_sector2, FA_sector3, FA_sector4, FA_sector5,
-                    MD_sector1, MD_sector2, MD_sector3, MD_sector4, 
-                    RD_sector1, RD_sector2, RD_sector3, RD_sector4,
-                    AD_sector1, AD_sector2, AD_sector3, AD_sector4
-                    )
-         )
+                    FA_sectors,
+                    MD_sectors, 
+                    RD_sectors,
+                    AD_sectors
+  )
+  )
 }
+
+
+diffusion_index_sectors = function(streamline, name_variable, info_diffusion_index){
+  diffusion_vector = as_vector(streamline[name_variable])
+  n_sectors = info_diffusion_index[[1]]
+  if(n_sectors == 1) return (mean(diffusion_vector))
+  break_points = info_diffusion_index[[2]]
+  start = 1
+  end = break_points[1]-1
+  sectors = c()
+  sectors = cbind(sectors,mean(diffusion_vector[start:end]))
+  colnames(sectors)[1] = paste(name_variable,"sector", 1, sep = "_")
+  
+  i=1;
+  while(i < (n_sectors-1)){
+    start = break_points[i] 
+    end = break_points[i+1]-1
+    sectors = cbind(sectors, mean(diffusion_vector[start:end]))
+    colnames(sectors)[i+1] = paste(name_variable,"sector",i+1, sep = "_")
+    i=i+1
+  }
+  sectors = cbind(sectors, mean(diffusion_vector[break_points[n_sectors-1]:length(diffusion_vector)]))
+  colnames(sectors)[n_sectors] = paste(name_variable,"sector",n_sectors, sep = "_")
+  
+  return (sectors)
+}
+
 
 norm_vec2 <- function(x){sqrt(crossprod(x))}
-
-create_dataset_new = function(tract, side_label, standardized = T, lambda_opt = NULL)
-{
-  features = map_df(tract$Streamlines, compute_streamline_features)
-  
-  n = length(tract$Streamlines)
-  patient = rep (as.numeric(tract$PatientId), n)
-  side = rep(side_label,n)
-
-  if (standardized == T){
-    features = scale(features)
-    features = as.data.frame(features)
-  }
-  
-  features = mutate(features, side, patient)
-  
-  return(features)
-}
-
-
-
-MD_sectors = function(streamline){
-  md_vector = streamline$md
-  sector1 = (mean(md_vector[1:26]))
-  sector2 = (mean(md_vector[27:35]))
-  sector3 = (mean(md_vector[36:39]))
-  sector4 = (mean(md_vector[40:50]))
-  return (cbind(sector1, sector2, sector3, sector4))
-}
-
-RD_sectors = function(streamline, sector){
-  rd_vector = streamline$rd
-  sector1 = (mean(rd_vector[1:20]))
-  sector2 = (mean(rd_vector[21:30]))
-  sector3 = (mean(rd_vector[31:36]))
-  sector4 = (mean(rd_vector[37:50]))
-  return (cbind(sector1, sector2, sector3, sector4))
-}
-
-AD_sectors = function(streamline){
-  ad_vector = streamline$rd
-  sector1 = (mean(ad_vector[1:13]))
-  sector2 = (mean(ad_vector[14:26]))
-  sector3 = (mean(ad_vector[27:33]))
-  sector4 = (mean(ad_vector[34:50]))
-  return (cbind(sector1, sector2, sector3, sector4))
-}
-
-FA_sectors = function(streamline){
-  fa_vector = streamline$fa
-  sector1 = (mean(fa_vector[1:8]))
-  sector2 = (mean(fa_vector[9:20]))
-  sector3 = (mean(fa_vector[21:28]))
-  sector4 = (mean(fa_vector[29:34]))
-  sector5 = (mean(fa_vector[35:50]))
-  return (cbind(sector1, sector2, sector3, sector4, sector5))
-}
