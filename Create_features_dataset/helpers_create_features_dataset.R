@@ -1,5 +1,5 @@
 compute_streamline_features = function (streamline) {
-  curv_torsNOSTRA = get_curvature_torsion_fda3D_lambda_fixed(streamline, lambda=lambda_opt)
+  # curv_torsNOSTRA = get_curvature_torsion_fda3D_lambda_fixed(streamline, lambda=lambda_opt)
   # Curvature
   curvature = get_curvature(streamline)$curvature
   curv_max = max(curvature)      
@@ -8,9 +8,9 @@ compute_streamline_features = function (streamline) {
   # curv_maxNOSTRA = curv_torsNOSTRA[1]     
   # curv_meanNOSTRA = curv_torsNOSTRA[2]  
   # curv_sdNOSTRA = curv_torsNOSTRA[3]  
-  curv_maxDIFF= curv_max- curv_torsNOSTRA[1]
-  curv_meanDIFF = curv_mean - curv_torsNOSTRA[2]
-  curv_sdDIFF = curv_sd - curv_torsNOSTRA[3]
+  # curv_maxDIFF= curv_max- curv_torsNOSTRA[1]
+  # curv_meanDIFF = curv_mean - curv_torsNOSTRA[2]
+  # curv_sdDIFF = curv_sd - curv_torsNOSTRA[3]
   
   # Torsion
   torsion = get_torsion(streamline)$torsion
@@ -20,9 +20,9 @@ compute_streamline_features = function (streamline) {
   # tors_maxNOSTRA = curv_torsNOSTRA[4]     
   # tors_meanNOSTRA = curv_torsNOSTRA[5]  
   # tors_sdNOSTRA = curv_torsNOSTRA[6] 
-  tors_maxDIFF = tors_max - curv_torsNOSTRA[4]
-  tors_meanDIFF = tors_mean - curv_torsNOSTRA[5]
-  tors_sdDIFF = tors_sd - curv_torsNOSTRA[6]
+  # tors_maxDIFF = tors_max - curv_torsNOSTRA[4]
+  # tors_meanDIFF = tors_mean - curv_torsNOSTRA[5]
+  # tors_sdDIFF = tors_sd - curv_torsNOSTRA[6]
   
   clength = get_curvilinear_length(streamline, validate = F)
   elength = get_euclidean_length(streamline, validate = F)
@@ -65,8 +65,8 @@ compute_streamline_features = function (streamline) {
                     # curv_maxNOSTRA, curv_meanNOSTRA, curv_sdNOSTRA,
                     tors_max, tors_mean, tors_sd, 
                     # tors_maxNOSTRA, tors_meanNOSTRA, tors_sdNOSTRA,
-                    curv_maxDIFF, curv_meanDIFF, curv_sdDIFF,
-                    tors_maxDIFF, tors_meanDIFF, tors_sdDIFF,
+                    # curv_maxDIFF, curv_meanDIFF, curv_sdDIFF,
+                    # tors_maxDIFF, tors_meanDIFF, tors_sdDIFF,
                     clength, elength, sinuosity,
                     x_barycenter, y_barycenter, z_barycenter,
                     x_SpMed, y_SpMed, z_SpMed, 
@@ -81,7 +81,7 @@ compute_streamline_features = function (streamline) {
 
 norm_vec2 <- function(x){sqrt(crossprod(x))}
 
-create_dataset_new = function(tract, side_label, standardized = T, lambda_opt)
+create_dataset_new = function(tract, side_label, standardized = T, lambda_opt = NULL)
 {
   features = map_df(tract$Streamlines, compute_streamline_features)
   
@@ -103,8 +103,8 @@ create_dataset_new = function(tract, side_label, standardized = T, lambda_opt)
 
 MD_sectors = function(streamline){
   md_vector = streamline$md
-  sector1 = (mean(md_vector[1:25]))
-  sector2 = (mean(md_vector[26:35]))
+  sector1 = (mean(md_vector[1:26]))
+  sector2 = (mean(md_vector[27:35]))
   sector3 = (mean(md_vector[36:39]))
   sector4 = (mean(md_vector[40:50]))
   return (cbind(sector1, sector2, sector3, sector4))
@@ -112,27 +112,27 @@ MD_sectors = function(streamline){
 
 RD_sectors = function(streamline, sector){
   rd_vector = streamline$rd
-  sector1 = (mean(rd_vector[1:16]))
-  sector2 = (mean(rd_vector[17:32]))
-  sector3 = (mean(rd_vector[33:36]))
+  sector1 = (mean(rd_vector[1:20]))
+  sector2 = (mean(rd_vector[21:30]))
+  sector3 = (mean(rd_vector[31:36]))
   sector4 = (mean(rd_vector[37:50]))
   return (cbind(sector1, sector2, sector3, sector4))
 }
 
 AD_sectors = function(streamline){
   ad_vector = streamline$rd
-  sector1 = (mean(ad_vector[1:17]))
-  sector2 = (mean(ad_vector[18:28]))
-  sector3 = (mean(ad_vector[29:34]))
-  sector4 = (mean(ad_vector[35:50]))
+  sector1 = (mean(ad_vector[1:13]))
+  sector2 = (mean(ad_vector[14:26]))
+  sector3 = (mean(ad_vector[27:33]))
+  sector4 = (mean(ad_vector[34:50]))
   return (cbind(sector1, sector2, sector3, sector4))
 }
 
 FA_sectors = function(streamline){
   fa_vector = streamline$fa
-  sector1 = (mean(fa_vector[1:10]))
-  sector2 = (mean(fa_vector[11:18]))
-  sector3 = (mean(fa_vector[19:28]))
+  sector1 = (mean(fa_vector[1:8]))
+  sector2 = (mean(fa_vector[9:20]))
+  sector3 = (mean(fa_vector[21:28]))
   sector4 = (mean(fa_vector[29:34]))
   sector5 = (mean(fa_vector[35:50]))
   return (cbind(sector1, sector2, sector3, sector4, sector5))
