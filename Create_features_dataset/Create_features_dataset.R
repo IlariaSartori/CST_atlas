@@ -11,7 +11,7 @@ library(fda)
 
 source("utility_functions.R")
 source("helpers_create_features_dataset.R")
-source("Curvatura_torsione3D.RData")
+# source("Curvatura_torsione3D.RData")
 
 # source("tensor_variables.R")
 # setwd("C:/Users/Vale/Google Drive/Progetto_StatApp/File per paper/Rdata_tratti_riparametrizzati_no_outliers")
@@ -19,6 +19,8 @@ source("Curvatura_torsione3D.RData")
 # setwd("C:/Users/User/Google Drive/Progetto_StatApp/File per paper/RData_tratti_riparametrizzati_no_outliers")
 
 setwd("/Users/ILARIASARTORI/Politecnico di Milano/Luca Torriani - Project StatApp/RData")
+setwd("C:/Users/User/OneDrive - Politecnico di Milano/Project StatApp/RData")
+
 load("cst_list.RData")
 # load("cst00_rep_no_outliers.RData")
 
@@ -26,31 +28,32 @@ load("cst_list.RData")
 #########################################################################################
 ################################ CURVATURA TORSIONE SUE #################################
 #########################################################################################
-cst01 = cst_list[[1]]
-lambda_opt = 3.04284112980894
+cst08 = cst_list[[8]]
+# lambda_opt = 3.04284112980894
 
-cst01__left_features = create_dataset_new (cst01$lhs, "left", standardized = F) 
-quartz()
-par(mfrow=c(2,3))
-plot(cst01__left_features$curv_maxDIFF)
-abline(h=0, col="red")
-plot(cst01__left_features$curv_meanDIFF)
-abline(h=0, col="red")
-plot(cst01__left_features$curv_sdDIFF)
-abline(h=0, col="red")
-plot(cst01__left_features$tors_maxDIFF)
-abline(h=0, col="red")
-plot(cst01__left_features$tors_meanDIFF)
-abline(h=0, col="red")
-plot(cst01__left_features$tors_sdDIFF)
-abline(h=0, col="red")
-
-cst01__right_features = create_dataset_new (cst01$rhs, "right", standardized = F)
-
-save(cst01__left_features, cst01__right_features, file = "cst_01_features.RData")
+cst08__left_features = create_dataset_new (cst08$lhs, "left", standardized = F) 
 
 
+cst08__right_features = create_dataset_new (cst08$rhs, "right", standardized = F)
 
+setwd("C:/Users/User/OneDrive - Politecnico di Milano/Project StatApp/RData/features_rep_no_std")
+save(cst08__left_features, cst08__right_features, file = "cst_08_features.RData")
+
+
+# quartz()
+# par(mfrow=c(2,3))
+# plot(cst01__left_features$curv_maxDIFF)
+# abline(h=0, col="red")
+# plot(cst01__left_features$curv_meanDIFF)
+# abline(h=0, col="red")
+# plot(cst01__left_features$curv_sdDIFF)
+# abline(h=0, col="red")
+# plot(cst01__left_features$tors_maxDIFF)
+# abline(h=0, col="red")
+# plot(cst01__left_features$tors_meanDIFF)
+# abline(h=0, col="red")
+# plot(cst01__left_features$tors_sdDIFF)
+# abline(h=0, col="red")
 
 #########################################################################################
 ################################ CURVATURA TORSIONE NOSTRE ##############################
