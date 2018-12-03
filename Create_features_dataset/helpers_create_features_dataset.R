@@ -5,18 +5,24 @@ compute_streamline_features = function (streamline) {
   curv_max = max(curvature)      
   curv_mean = mean(curvature)
   curv_sd = sd(curvature)
-  curv_maxNOSTRA = curv_torsNOSTRA[1]     
-  curv_meanNOSTRA = curv_torsNOSTRA[2]  
-  curv_sdNOSTRA = curv_torsNOSTRA[3]  
+  # curv_maxNOSTRA = curv_torsNOSTRA[1]     
+  # curv_meanNOSTRA = curv_torsNOSTRA[2]  
+  # curv_sdNOSTRA = curv_torsNOSTRA[3]  
+  curv_maxDIFF= curv_max- curv_torsNOSTRA[1]
+  curv_meanDIFF = curv_mean - curv_torsNOSTRA[2]
+  curv_sdDIFF = curv_sd - curv_torsNOSTRA[3]
   
   # Torsion
   torsion = get_torsion(streamline)$torsion
   tors_max = max(torsion)      
   tors_mean = mean(torsion)
   tors_sd = sd(torsion)
-  tors_maxNOSTRA = curv_torsNOSTRA[4]     
-  tors_meanNOSTRA = curv_torsNOSTRA[5]  
-  tors_sdNOSTRA = curv_torsNOSTRA[6]  
+  # tors_maxNOSTRA = curv_torsNOSTRA[4]     
+  # tors_meanNOSTRA = curv_torsNOSTRA[5]  
+  # tors_sdNOSTRA = curv_torsNOSTRA[6] 
+  tors_maxDIFF = tors_max - curv_torsNOSTRA[4]
+  tors_meanDIFF = tors_mean - curv_torsNOSTRA[5]
+  tors_sdDIFF = tors_sd - curv_torsNOSTRA[6]
   
   clength = get_curvilinear_length(streamline, validate = F)
   elength = get_euclidean_length(streamline, validate = F)
@@ -55,8 +61,12 @@ compute_streamline_features = function (streamline) {
   AD_sector3 = AD_sectors[3]
   AD_sector4 = AD_sectors[4]
   
-  return(data.frame(curv_max, curv_mean, curv_sd, curv_maxNOSTRA, curv_meanNOSTRA, curv_sdNOSTRA,
-                    tors_max, tors_mean, tors_sd, tors_maxNOSTRA, tors_meanNOSTRA, tors_sdNOSTRA,
+  return(data.frame(curv_max, curv_mean, curv_sd, 
+                    # curv_maxNOSTRA, curv_meanNOSTRA, curv_sdNOSTRA,
+                    tors_max, tors_mean, tors_sd, 
+                    # tors_maxNOSTRA, tors_meanNOSTRA, tors_sdNOSTRA,
+                    curv_maxDIFF, curv_meanDIFF, curv_sdDIFF,
+                    tors_maxDIFF, tors_meanDIFF, tors_sdDIFF,
                     clength, elength, sinuosity,
                     x_barycenter, y_barycenter, z_barycenter,
                     x_SpMed, y_SpMed, z_SpMed, 

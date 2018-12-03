@@ -1,7 +1,6 @@
 library(tidyverse)
 library(devtools)
 library(readr)
-library(fdatractography)
 library(boot)
 library(gtools)
 library(Gmedian)
