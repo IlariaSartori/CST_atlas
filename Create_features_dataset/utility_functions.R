@@ -83,7 +83,7 @@ get_barycenter_streamline <- function(streamline, validate = TRUE) {
   }
   streamline_coords = select(streamline, x, y, z)
   bar=colMeans(streamline_coords)
-  bar=data_frame(x=bar[1], y=bar[2], z=bar[3])
+  bar=data_frame(x_Bar=bar[1], y_Bar=bar[2], z_Bar=bar[3])
   return (bar)
 }
 
@@ -112,8 +112,7 @@ get_sp_median_streamline = function(streamline, validate = TRUE) {
   }
   streamline_coords = select(streamline, x, y, z)
   spatial_med = Gmedian(streamline_coords)
-  spatial_med = data_frame(x=spatial_med[1], y=spatial_med[2], z=spatial_med[3])
-  # names(spatial_med) = c("x_SpMed", "y_SpMed", "z_SpMed")
+  spatial_med = data_frame(x_SpMed=spatial_med[1], y_SpMed=spatial_med[2], z_SpMed=spatial_med[3])
   return(spatial_med)
 }
 
