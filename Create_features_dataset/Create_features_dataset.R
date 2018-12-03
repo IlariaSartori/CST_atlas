@@ -28,16 +28,23 @@ load("cst_list.RData")
 #########################################################################################
 ################################ CURVATURA TORSIONE SUE #################################
 #########################################################################################
-cst08 = cst_list[[8]]
+cst01 = cst_list[[1]]
 # lambda_opt = 3.04284112980894
+MD_info = list(4, c(27,36,40))
+AD_info = list(4, c(14,27,34))
+RD_info = list(4, c(21,31,37))
+FA_info = list(5, c(9,21,29,35))
 
-cst08__left_features = create_dataset_new (cst08$lhs, "left", standardized = F) 
+cst01__left_features = create_dataset_new (cst01$lhs, "left", MD_info = MD_info, RD_info = RD_info, AD_info=AD_info,
+                                           FA_info = FA_info, standardized = F) 
 
 
-cst08__right_features = create_dataset_new (cst08$rhs, "right", standardized = F)
+
+cst01__right_features = create_dataset_new (cst01$rhs, "right", MD_info = MD_info, RD_info = RD_info, AD_info=AD_info,
+                                            FA_info = FA_info, standardized = F)
 
 setwd("C:/Users/User/OneDrive - Politecnico di Milano/Project StatApp/RData/features_rep_no_std")
-save(cst08__left_features, cst08__right_features, file = "cst_08_features.RData")
+save(cst01__left_features, cst01__right_features, file = "cst_01_features.RData")
 
 
 # quartz()
