@@ -14,16 +14,21 @@ library(cluster)
 ############################### Caricare tratti ######################################
 ######################################################################################
 # Loading tracts
-load("../RData/cst_list.RData")
+setwd("/Users/ILARIASARTORI/Politecnico di Milano/Luca Torriani - Project StatApp/RData")
+load("cst_list.RData")
+
+
+################################### MANCA IL MALATO ###################################
 ### Aggiungo a mano il cst del malato (poi quello definitivo va inserito nella cst_list)
-load("../RData/cst00_rep_no_outliers.RData")
-cst00 = list(cst00_left, cst00_right)
-cst_list = c(list(cst00), cst_list) 
+# load("../RData/cst00_rep_no_outliers.RData")
+# cst00 = list(cst00_left, cst00_right)
+# cst_list = c(list(cst00), cst_list) 
 # Lista di 21 elementi. 
 # Ogni elemento rappresenta un paziente (il primo è il paziente malato e poi in ordine da 1 a 20)
 # Ogni elemento (i.e paziente) è rappresentato da una lista di 2 elementi: il cst sinistro e il destro
+#######################################################################################
 
-source("helper_cluster.R")
+source("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/helper_cluster.R")
 
 num_streamline_patients = map_dbl (cst_list, num_of_streamline_patient)   # !! Senza outliers!!!!! 
 # Per ogni paziente somma numero streamline destro+sinistro
@@ -31,46 +36,69 @@ num_streamline_patients = map_dbl (cst_list, num_of_streamline_patient)   # !! S
 ################################################################################################
 ############################ Creare dataset primi punti ########################################
 ################################################################################################
-# names_col = names(cst_list[[1]][[1]]$data[[1]])
+# names_col = names(cst_list[[1]]$lhs$Streamlines[[1]])
 # ind_x = which(names_col=="x")
 # ind_y = which(names_col=="y")
 # ind_z = which(names_col=="z")
-# data_first_points = map(cst_list, dataset_first_points, ind_x, ind_y, ind_z) 
+# data_first_points = map(cst_list, dataset_first_points, ind_x, ind_y, ind_z)
 # # Mappa di 21 elementi. Ogni elemento è il dataset dei punti iniziali delle streamline di quel paziente
 # 
-# setwd("C:/Users/User/Google Drive/Progetto_StatApp/File per paper")
 # save(data_first_points, file = "data_first_points.RData")
 
 #### Caricare dataset primi punti (data_first_points)
-load("../RData/data_first_points.RData")    # Lista dataset primi punti
+load("data_first_points.RData")    # Lista dataset primi punti
 
 ################################################################################################
 ######################################## Clustering ############################################
 ################################################################################################
-data_first_points_sick_matrix = data_first_points[[1]]
 
-data_first_points_healty_matrix = NULL  # Metto i punti iniziali dei sani insieme in una matrice
-for (i in 2:length(data_first_points)) {
-  data_first_points_healty_matrix = rbind (data_first_points_healty_matrix, data_first_points[[i]])
-}
+################################### MANCA IL MALATO ###################################
+# data_first_points_sick_matrix = data_first_points[[1]]
+# 
+# data_first_points_healty_matrix = NULL  # Metto i punti iniziali dei sani insieme in una matrice
+# for (i in 2:length(data_first_points)) {
+#   data_first_points_healty_matrix = rbind (data_first_points_healty_matrix, data_first_points[[i]])
+# }
+
+data_first_points_healty_matrix = map_df (data_first_points, rbind)
+#######################################################################################
 
 
 #### Cluster sani
 n=50
-treshold = 20  
+treshold = 20
 num_healty_patients = 20
-k_opt = get_k_opt(data_first_points_healty_matrix, n, treshold, num_healty_patients) ##
+k_opt = get_k_opt(data_first_points_healty_matrix, n, treshold, num_healty_patients) ## 9
 clara = get_cluster_clara(data_first_points_healty_matrix, k_opt)  # prima di clara c'è un set.seed(1994)
 cluster_healty = clara$clustering
 
-#### Cluster malato
-choose_k_sick(data_first_points_sick_matrix[,1:3], k_opt)  # Mi da errore non converge?
-k_sick = 6 #???? DA SISTEMARE, è per fare una prova
-k_means_sick = kmeans(data_first_points_sick_matrix[,1:3], k_sick)
-cluster_sick = k_means_sick$cluster
+# n=50
+# num_healty_patients = 20
+# k_opt_vec=NULL
+# treshold_vec = c(5,10,15,20,25,30,35,40,45,50,55,60,65,70)
+# for (treshold in treshold_vec) {
+#   k_opt_vec = c(k_opt_vec, get_k_opt(data_first_points_healty_matrix, n, treshold, num_healty_patients)) 
+# }
+# 
+# quartz()
+# plot(treshold_vec, k_opt_vec, pch = 19, xlab = "Threshold", ylab = "k_opt", main = "k_opt - threshold")
+# lines(treshold_vec, k_opt_vec)
 
+
+################################### MANCA IL MALATO ###################################
+# #### Cluster malato
+# choose_k_sick(data_first_points_sick_matrix[,1:3], k_opt)  # Mi da errore non converge?
+# k_sick = 6 #???? DA SISTEMARE, è per fare una prova
+# k_means_sick = kmeans(data_first_points_sick_matrix[,1:3], k_sick)
+# cluster_sick = k_means_sick$cluster
+# 
+# ####  In data_first_points aggiungo la colonna con i cluster di appartenenza
+# data_first_points = map(data_first_points, add_cluster_column, clusters = c(cluster_sick, cluster_healty), num_streamline_patients=num_streamline_patients)
+
+# add_cluster_column CAMBIATA per gestire il fatto che non c'è il malato
 ####  In data_first_points aggiungo la colonna con i cluster di appartenenza
-data_first_points = map(data_first_points, add_cluster_column, clusters = c(cluster_sick, cluster_healty), num_streamline_patients=num_streamline_patients)
+data_first_points = map(data_first_points, add_cluster_column, clusters = cluster_healty, num_streamline_patients=num_streamline_patients)
+#######################################################################################
 
 #### Riproietto il tratto sinistro nel piano delle x negative
 data_first_points = map(data_first_points, reproject_x)
@@ -78,60 +106,106 @@ data_first_points = map(data_first_points, reproject_x)
 ################################################################################################
 ############################### Creo features_patients_9_6.RData ###############################
 ################################################################################################
-# ### Loading features
-# load("../RData/features_list.RData")
+### Loading features
+load("features_list.RData")
+
+################################### MANCA IL MALATO ###################################
 # ### Aggiungo a mano le features del malato (poi quello definitivo va inserito nella features_list)
 # load("cst0_features.RData")
 # features00 = list(cst0_left_features, cst0_right_features)
-# features_list = c(list(features00), features_list) 
-# # Lista di 21 elementi. 
+# features_list = c(list(features00), features_list)
+# # Lista di 21 elementi.
 # # Ogni elemento rappresenta un paziente (il primo è il paziente malato e poi in ordine da 1 a 20)
 # # Ogni elemento (i.e paziente) è rappresentato da una lista di 2 elementi: le features sinistre e le destre
-# 
-# # Lista di 21 elementi. Ogni elemento è un dataframe con le features delle varie streamline di quel paziente,
-# # prima quelle sinistre e poi le destre
-# features_list_sxdx = map (features_list, merge_left_right_features)
-# 
+#######################################################################################
+
+# Lista di 21 elementi. Ogni elemento è un dataframe con le features delle varie streamline di quel paziente,
+# prima quelle sinistre e poi le destre
+features_list_sxdx = map (features_list, merge_left_right_features)
+
+################################### MANCA IL MALATO ###################################
 # # Aggiungo gli indici del cluster
 # features_list_sxdx = map (features_list_sxdx, add_cluster_column, clusters = c(cluster_sick, cluster_healty), num_streamline_patients=num_streamline_patients)  # features_final
 # 
 # setwd("/Users/ILARIASARTORI/Google drive/Progetto_StatApp/File per paper/Rdata_clustering")
 # save (features_list_sxdx, file="features_patients_9_6.RData")
 
+# Aggiungo gli indici del cluster
+features_list_sxdx = map (features_list_sxdx, add_cluster_column, clusters = cluster_healty, num_streamline_patients=num_streamline_patients)  # features_final
+
+save (features_list_sxdx, file="features_patients_9.RData")
+#######################################################################################
+
 
 ################################################################################################
 ########################## Creo features_patients_reduced_9_6.RData ############################
 ################################################################################################
-# # Calcolo i centroidi
-# features_reduced = map (features_list_sxdx, get_reduced_tot)
-# 
-# setwd("/Users/ILARIASARTORI/Google drive/Progetto_StatApp/File per paper/Rdata_centroidi")
-# save (features_reduced, file="features_patients_reduced_9_6.RData")
+load("features_patients_9.RData")
+# Calcolo i centroidi
+features_reduced_tmp = purrr::map (features_list_sxdx, get_reduced_tot)
+extract_centroid = function (data) {
+  return(data$centroid)
+}
+extract_var_sx = function (data) {
+  return(data$var_sx)
+}
+extract_var_dx = function (data) {
+  return(data$var_dx)
+}
+features_reduced = map(features_reduced_tmp, extract_centroid) # Centroids
+var_sx_features_reduced = map(features_reduced_tmp, extract_var_sx)
+var_dx_features_reduced = map(features_reduced_tmp, extract_var_dx)
+
+save (features_reduced, var_sx_features_reduced, var_dx_features_reduced, file="features_patients_reduced_9.RData")
+
+# Plot variance
+library(fields)
+z_lim=c(-5,5)
+id_pat = 1
+side = "left"
+quartz()
+par(mfrow=c(3,3), mai = c(0.1,0.1,0.3,0.1), oma=c(1,1,4,1))
+for (i in 1:9){
+  if(side=="left") image.plot(var_sx_features_reduced[[id_pat]][[i]], zlim=z_lim, axes=F, main = paste("Cluster",i))
+  else image.plot(var_dx_features_reduced[[id_pat]][[i]], zlim=z_lim, axes=F, main = paste("Cluster",i))
+}
+mtext(paste("Patient",id_pat, ", ", "Side ", side), side = 3, line = 1, outer = TRUE, font=2) #line = -2,
 
 
+# image.plot(t(var_sx_features_reduced[[1]]), axes = F, xlim = c(0,1), ylim=c(0,1) )
+# mtext(text=c(paste("Cluster",1:9)), side=2, line=0.3, at=seq(0,1, length.out = 9), las=1, cex=0.8)
+# mtext(text=c(paste("Feature",1:33)), side=1, line=0.3, at=seq(0,1, length.out = 33), las=2, cex=0.8)
+# image.plot(t(var_sx_features_reduced[[1]]), legend.only=T)
 
 
 ######################################################################################
 ########################## Primo grafico #############################################
 ######################################################################################
+library(rgl)
+setwd("/Users/ILARIASARTORI/Politecnico di Milano/Luca Torriani - Project StatApp/RData")
+load("features_patients_9.RData")
+load("features_patients_reduced_9.RData")
 
-load("../RData/features_patients_9_6.RData")
-load("../RData/features_patients_reduced_9_6.RData")
-
-source("helper_cluster.R")
-source("helper_cluster_plot.R")
+source("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/helper_cluster.R")
+source("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/helper_cluster_plot.R")
 
 # Loading tracts
-load("../RData/cst_list.RData")
-### Aggiungo a mano il cst del malato (poi quello definitivo va inserito nella cst_list)
-load("../RData/cst00_rep_no_outliers.RData")
-cst00 = list(cst00_left, cst00_right)
-cst_list = c(list(cst00), cst_list)
+load("cst_list.RData")
 
-# tolgo il malato
-features_reduced_healty = features_reduced[-1]
-features_list_sxdx_healty = features_list_sxdx[-1]
-cst_list_healty = cst_list[-1]
+################################### MANCA IL MALATO ###################################
+# ### Aggiungo a mano il cst del malato (poi quello definitivo va inserito nella cst_list)
+# load("../RData/cst00_rep_no_outliers.RData")
+# cst00 = list(cst00_left, cst00_right)
+# cst_list = c(list(cst00), cst_list)
+# # tolgo il malato
+# features_reduced_healty = features_reduced[-1]
+# features_list_sxdx_healty = features_list_sxdx[-1]
+# cst_list_healty = cst_list[-1]
+
+features_reduced_healty = features_reduced
+features_list_sxdx_healty = features_list_sxdx
+cst_list_healty = cst_list
+#######################################################################################
 
 indexes_plot1 = get_cluster_patient_true_mean_indexes_healty (features_reduced_healty, features_list_sxdx_healty)
 
@@ -163,23 +237,31 @@ plot_from_indexes (cst_list_healty, indexes_plot1)
 ######################################################################################
 ################################# Secondo grafico ####################################
 ######################################################################################
-load("../RData/features_patients_reduced_9_6.RData")
-load("../RData/features_patients_9_6.RData")
+library(rgl)
+setwd("/Users/ILARIASARTORI/Politecnico di Milano/Luca Torriani - Project StatApp/RData")
+load("features_patients_9.RData")
+load("features_patients_reduced_9.RData")
 
-source("helper_cluster.R")
-source("helper_cluster_plot.R")
+source("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/helper_cluster.R")
+source("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/helper_cluster_plot.R")
 
 # Loading tracts
 load("cst_list.RData")
-### Aggiungo a mano il cst del malato (poi quello definitivo va inserito nella cst_list)
-load("cst00_rep_no_outliers.RData")
-cst00 = list(cst00_left, cst00_right)
-cst_list = c(list(cst00), cst_list)
 
-# tolgo il malato
-features_reduced_healty = features_reduced[-1]
-features_list_sxdx_healty = features_list_sxdx[-1]
-cst_list_healty = cst_list[-1]
+################################### MANCA IL MALATO ###################################
+# ### Aggiungo a mano il cst del malato (poi quello definitivo va inserito nella cst_list)
+# load("../RData/cst00_rep_no_outliers.RData")
+# cst00 = list(cst00_left, cst00_right)
+# cst_list = c(list(cst00), cst_list)
+# # tolgo il malato
+# features_reduced_healty = features_reduced[-1]
+# features_list_sxdx_healty = features_list_sxdx[-1]
+# cst_list_healty = cst_list[-1]
+
+features_reduced_healty = features_reduced
+features_list_sxdx_healty = features_list_sxdx
+cst_list_healty = cst_list
+#######################################################################################
 
 indexes_plot2 = get_cluster_true_mean_indexes_healty (features_reduced_healty, features_list_sxdx_healty)
 

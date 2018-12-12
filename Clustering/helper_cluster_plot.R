@@ -459,9 +459,9 @@ plot_from_indexes = function (cst_list_healty, indexes_plot) {
       patient = indexes_plot[[j]][[s]]$patient
       index = indexes_plot[[j]][[s]]$idx
       for (i in 1: length(patient)) {
-        x= cst_list_healty[[patient[i]]][[s]]$data[[index[i]]]$x
-        y= cst_list_healty[[patient[i]]][[s]]$data[[index[i]]]$y
-        z= cst_list_healty[[patient[i]]][[s]]$data[[index[i]]]$z
+        x= cst_list_healty[[patient[i]]][[s]]$Streamlines[[index[i]]]$x
+        y= cst_list_healty[[patient[i]]][[s]]$Streamlines[[index[i]]]$y
+        z= cst_list_healty[[patient[i]]][[s]]$Streamlines[[index[i]]]$z
         
         X = cbind(x,y,z)
         

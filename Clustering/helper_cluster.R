@@ -1,17 +1,17 @@
 
 dataset_first_points = function(cst, ind_x, ind_y, ind_z){   # cst[[1]]= cst_left   cst[[2]]=cst_right
   dataset = NULL
-  nl = length(cst[[1]]$data)
-  nr = length(cst[[2]]$data)
+  nl = length(cst$lhs$Streamlines)
+  nr = length(cst$rhs$Streamlines)
 
-  first_left = map_df(cst[[1]]$data, slice,1) [c(ind_x, ind_y, ind_z)]   # Prendo le colonne x,y,z della prima riga
-  first_right = map_df(cst[[2]]$data, slice,1) [c(ind_x, ind_y, ind_z)]
+  first_left = map_df(cst$lhs$Streamlines, slice,1) [c(ind_x, ind_y, ind_z)]   # Prendo le colonne x,y,z della prima riga
+  first_right = map_df(cst$rhs$Streamlines, slice,1) [c(ind_x, ind_y, ind_z)]
 
   first_left[,1] = -first_left[,1]  # Proietto il tratto sinistro nel piano delle x positive
   tmp = rbind(first_left, first_right)
   
   side = rep(c("left","right"),c(nl,nr))
-  patient = rep (as.numeric(cst[[1]]$case), nl+nr)
+  patient = rep (as.numeric(cst$lhs$PatientId), nl+nr)
   dataset = cbind(tmp,side,patient)
   
   return(dataset)
@@ -19,14 +19,24 @@ dataset_first_points = function(cst, ind_x, ind_y, ind_z){   # cst[[1]]= cst_lef
 
 add_cluster_column = function (data_first_pat_j, clusters, num_streamline_patients) {
   j = data_first_pat_j$patient[1]  # Indice del paziente: 0 per il malato e gli altri a seguire
-  if (j == 0 ) {
+  ################################### MANCA IL MALATO ###################################
+  # if (j == 0 ) {
+  #   num_previous_streamline = 0
+  # }
+  # else {
+  #   num_previous_streamline = sum(num_streamline_patients[1:j])
+  # }
+  # clust = clusters [(num_previous_streamline+1) : (num_previous_streamline + num_streamline_patients[(j+1)])]
+  # return (cbind(data_first_pat_j, clust))
+  if (j == 1 ) {
     num_previous_streamline = 0
   }
   else {
-    num_previous_streamline = sum(num_streamline_patients[1:j])
+    num_previous_streamline = sum(num_streamline_patients[1:(j-1)])
   }
-  clust = clusters [(num_previous_streamline+1) : (num_previous_streamline + num_streamline_patients[(j+1)])]
+  clust = clusters [(num_previous_streamline+1) : (num_previous_streamline + num_streamline_patients[(j)])]
   return (cbind(data_first_pat_j, clust))
+  #######################################################################################
 }
 
 
@@ -71,16 +81,18 @@ get_k_opt = function(data_big, n=22, treshold = 20, num_healty_patients){
     clara = get_cluster_clara(data_big,i)
     cluster = clara$clustering
     new_data = cbind(data_big, cluster)
-    attach(new_data)
+    # attach(new_data)
     # We stop when we find a healty patient for whom a cluster has a number of elements smaller than the threshold
     for(j in 1:num_healty_patients){
-      check_sx = new_data[which(side == "left"  &  patient == j) ,6]
+      check_sx = filter(new_data, side == "left", patient == j)$cluster
+      # check_sx = new_data[which(side == "left"  &&  patient == j) ,6]
       num_sx = table(check_sx)
       check_sx = (unique(check_sx))
-      check_dx = new_data[which(side == "right" &  patient == j) ,6]
+      # check_dx = new_data[which(side == "right" &&  patient == j) ,6]
+      check_dx = filter(new_data, side == "left", patient == j)$cluster
       num_dx = table(check_dx)
       check_dx = unique(check_dx)
-      if( sum(is.element(1:i,check_sx))<i ||    # Questi primi due 'or' servono?
+      if( sum(is.element(1:i,check_sx))<i ||    # Check if there is an empty cluster
           sum(is.element(1:i,check_dx))<i || 
           min(num_sx)< treshold || 
           min(num_dx)< treshold ) 
@@ -170,6 +182,8 @@ get_reduced_tot = function(features){
   fac_left = factor(features_left$clust)
   n_left = length(levels(fac_left))
   tmp_sx = apply(features_left[,1:33], 2, tapply, fac_left, mean)
+  tmp_var_sx = split(as.data.frame(scale(features_left[,1:33])), features_left$clust)
+  var_sx = map(tmp_var_sx, cov)
   side_sx = rep("left", n_left)
   clust = levels(fac_left)
   patient =  rep(features_left$patient[1], n_left)
@@ -180,6 +194,8 @@ get_reduced_tot = function(features){
   fac_right = factor(features_right$clust)
   n_right = length(levels(fac_right))
   tmp_dx = apply(features_right[,1:33], 2, tapply, fac_right, mean)
+  tmp_var_dx = split(as.data.frame(scale(features_right[,1:33])), features_right$clust)
+  var_dx = map(tmp_var_dx, cov)
   side_dx = rep("right", n_right)
   clust = levels(fac_right)
   patient =  rep(features_right$patient[1], n_right)
@@ -188,7 +204,7 @@ get_reduced_tot = function(features){
   
   centroids = rbind(centroids_left, centroids_right)
   rownames(centroids) = 1:dim(centroids)[1]
-  return(as.data.frame(centroids))
+  return(list(centroids = as.data.frame(centroids), var_sx = var_sx, var_dx = var_dx))
 }
 
 ############## FIND REPRESENTATIVE
@@ -379,11 +395,11 @@ old_indixes_of_no_outliers = function (orig_out_indexes) {
 }
 
 num_of_streamline_patient = function (cst) {
-  return (num_of_streamline_tract(cst[[1]]) + num_of_streamline_tract(cst[[2]]))
+  return (num_of_streamline_tract(cst$lhs) + num_of_streamline_tract(cst$rhs))
 }
 
 num_of_streamline_tract = function (tract) {
-  return (length(tract$data))
+  return (length(tract$Streamlines))
 }
 
 # NEW: 20/11/18 (non usata)
