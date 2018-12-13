@@ -174,7 +174,7 @@ merge_left_right_features = function (features_patient_j) {
   return (rbind(features_patient_j[[1]], features_patient_j[[2]]))
 }
 
-get_reduced_tot = function(features){
+get_reduced_tot = function(features, mean_left, sd_left, mean_right, sd_right){
   # features deve avere la colonna anche patient e cluster
   
   # left
@@ -182,8 +182,12 @@ get_reduced_tot = function(features){
   fac_left = factor(features_left$clust)
   n_left = length(levels(fac_left))
   tmp_sx = apply(features_left[,1:33], 2, tapply, fac_left, mean)
-  tmp_var_sx = split(as.data.frame(scale(features_left[,1:33])), features_left$clust)
+  
+  std_data_left = sweep(features_left[,1:33], 2, mean_left)  # Subtract the mean
+  std_data_left = sweep(std_data_left, 2, sd_left, FUN = "/")   # Divide by the standard deviation
+  tmp_var_sx = split(std_data_left, features_left$clust)
   var_sx = map(tmp_var_sx, cov)
+  
   side_sx = rep("left", n_left)
   clust = levels(fac_left)
   patient =  rep(features_left$patient[1], n_left)
@@ -194,8 +198,12 @@ get_reduced_tot = function(features){
   fac_right = factor(features_right$clust)
   n_right = length(levels(fac_right))
   tmp_dx = apply(features_right[,1:33], 2, tapply, fac_right, mean)
-  tmp_var_dx = split(as.data.frame(scale(features_right[,1:33])), features_right$clust)
+  
+  std_data_right = sweep(features_right[,1:33], 2, mean_right)  # Subtract the mean
+  std_data_right = sweep(std_data_right, 2, sd_right, FUN = "/")   # Divide by the standard deviation
+  tmp_var_dx = split(std_data_right, features_right$clust)
   var_dx = map(tmp_var_dx, cov)
+  
   side_dx = rep("right", n_right)
   clust = levels(fac_right)
   patient =  rep(features_right$patient[1], n_right)

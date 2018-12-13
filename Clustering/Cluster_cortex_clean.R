@@ -133,7 +133,7 @@ features_list_sxdx = map (features_list, merge_left_right_features)
 # Aggiungo gli indici del cluster
 features_list_sxdx = map (features_list_sxdx, add_cluster_column, clusters = cluster_healty, num_streamline_patients=num_streamline_patients)  # features_final
 
-save (features_list_sxdx, file="features_patients_9.RData")
+save (features_list_sxdx, mean_left, sd_left, mean_right, sd_right, file="features_patients_9.RData")
 #######################################################################################
 
 
@@ -142,7 +142,7 @@ save (features_list_sxdx, file="features_patients_9.RData")
 ################################################################################################
 load("features_patients_9.RData")
 # Calcolo i centroidi
-features_reduced_tmp = purrr::map (features_list_sxdx, get_reduced_tot)
+features_reduced_tmp = purrr::map (features_list_sxdx, get_reduced_tot, mean_left=mean_left, sd_left=sd_left, mean_right=mean_right, sd_right=sd_right)
 extract_centroid = function (data) {
   return(data$centroid)
 }
@@ -159,17 +159,38 @@ var_dx_features_reduced = map(features_reduced_tmp, extract_var_dx)
 save (features_reduced, var_sx_features_reduced, var_dx_features_reduced, file="features_patients_reduced_9.RData")
 
 # Plot variance
+find_max = function(data) {
+  return (map_dbl(data, max))
+}
+find_min = function(data) {
+  return (map_dbl(data, min))
+}
+
 library(fields)
-z_lim=c(-5,5)
+
+
 id_pat = 1
 side = "left"
+if(side=="left") {
+  z_max = max(map_dbl(var_sx_features_reduced[[id_pat]],max))
+  z_min = min(map_dbl(var_sx_features_reduced[[id_pat]],min))
+  # z_max = max(map_dbl(map(var_sx_features_reduced, find_max), max))
+  # z_min = min(map_dbl(map(var_sx_features_reduced, find_min), min))
+  
+} else {
+  z_max = max(map_dbl(var_dx_features_reduced[[id_pat]],max))
+  z_min = min(map_dbl(var_dx_features_reduced[[id_pat]],min))
+  # z_max = max(map_dbl(map(var_dx_features_reduced, find_max), max))
+  # z_min = min(map_dbl(map(var_dx_features_reduced, find_min), min))
+}
+z_lim=c(z_min,z_max)
 quartz()
 par(mfrow=c(3,3), mai = c(0.1,0.1,0.3,0.1), oma=c(1,1,4,1))
 for (i in 1:9){
   if(side=="left") image.plot(var_sx_features_reduced[[id_pat]][[i]], zlim=z_lim, axes=F, main = paste("Cluster",i))
   else image.plot(var_dx_features_reduced[[id_pat]][[i]], zlim=z_lim, axes=F, main = paste("Cluster",i))
 }
-mtext(paste("Patient",id_pat, ", ", "Side ", side), side = 3, line = 1, outer = TRUE, font=2) #line = -2,
+mtext(paste("Patient",id_pat, ", ", "Side ", side), side = 3, line = 1, outer = TRUE, font=2)
 
 
 # image.plot(t(var_sx_features_reduced[[1]]), axes = F, xlim = c(0,1), ylim=c(0,1) )

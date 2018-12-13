@@ -1,5 +1,5 @@
 
-setwd("/Users/ILARIASARTORI/Politecnico di Milano/Luca Torriani - Project StatApp/RData/Features_rep_no_std")
+setwd("/Users/ILARIASARTORI/Politecnico di Milano/Luca Torriani - Project StatApp/RData")
 
 load("cst01_features.RData")
 load("cst02_features.RData")
@@ -44,6 +44,20 @@ features_list = list( cst01_features,
                       cst19_features,
                       cst20_features)
 
+select_left = function(features_pat) {
+  return(features_pat$lhs)
+}
+select_right = function(features_pat) {
+  return(features_pat$rhs)
+}
+
+library(purrr)
+features_left = map_dfr(features_list, select_left)
+mean_left = colMeans(features_left[,1:33])
+sd_left = apply(features_left[,1:33], 2, sd)
+features_right = map_df(features_list, select_right)
+mean_right = colMeans(features_right[,1:33])
+sd_right = apply(features_right[,1:33], 2, sd)
 setwd("/Users/ILARIASARTORI/Politecnico di Milano/Luca Torriani - Project StatApp/RData")
 
-save(features_list, file = "features_list.RData")
+save(features_list, mean_left, sd_left, mean_right, sd_right, file = "features_list.RData")
