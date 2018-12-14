@@ -212,10 +212,13 @@ for (side in c("left", "right")) {
 ########################## Primo grafico #############################################
 ######################################################################################
 library(rgl)
+setwd("~/Desktop//Politecnico di Milano/Luca Torriani - Project StatApp/RData")
 setwd("/Users/ILARIASARTORI/Politecnico di Milano/Luca Torriani - Project StatApp/RData")
 load("features_patients_9.RData")
 load("features_patients_reduced_9.RData")
 
+source("~/Desktop/OneDrive - Politecnico di Milano/CST_atlas/Clustering/helper_cluster.R")
+source("~/Desktop/OneDrive - Politecnico di Milano/CST_atlas/Clustering/helper_cluster_plot.R")
 source("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/helper_cluster.R")
 source("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/helper_cluster_plot.R")
 
@@ -360,14 +363,16 @@ for (side in c("left", "right")) {
 ######################################################################################
 ################################# Terzo grafico ##########################################
 ######################################################################################
-load("../RData/features_patients_reduced_9_6.RData")
-load("../RData/features_patients_9_6.RData")
-load("../RData/tensor_list.RData")
+setwd("~/Desktop/Politecnico di Milano/Luca Torriani - Project StatApp/RData")
+load("features_patients_reduced_9.RData")
+load("features_patients_9.RData")
+load("cst_list.RData")
+# load("../RData/tensor_list.RData")
 
-source("helper_cluster.R")
-source("helper_grafico3.R")
+source("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/helper_cluster.R")
+source("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/helper_grafico3.R")
 
-load ("../RData/outliers.RData")    # Indici outliers
+# load ("../RData/outliers.RData")    # Indici outliers
 # outliers_sx lista di 20 vettori contenenti gli indici delle streamline individuate come outliers 
 # nel tratto sx dei 20 pazienti
 # outliers_dx lista di 20 vettori contenenti gli indici delle streamline individuate come outliers 
