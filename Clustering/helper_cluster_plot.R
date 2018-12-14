@@ -345,15 +345,23 @@ collect_in_clusters = function (indexes_pat_clust, n_patients, n_clusters) {
 }
 
 
-
-
-
+extract_data_sx = function (data) {
+  return(data$lhs)
+}
+extract_data_dx = function (data) {
+  return(data$rhs)
+}
+evaluate_variance = function(features_clusterj, mean_vec, sd_vec) {
+  std_data = sweep(features_clusterj[,1:33], 2, mean_vec)  # Subtract the mean
+  std_data = sweep(std_data, 2, sd_vec, FUN = "/")   # Divide by the standard deviation
+  return(cov(std_data))
+}
 # Date features_reduced e features_list_sxdx (solo pazienti sani) restituisce
 # una lista di 9 (cluster), dove ogni elemento è una lista di 2 componenti:
 # - idx: Indice della streamline reale (rispetto a un paziente e alla side) più vicina (distanza L2 delle features)
 #        alla streamline fittizia media di quel cluster (media mettendo insieme tutti i pazienti)
 # - patient: Paziente a cui appartiene la streamline rappresentante
-get_cluster_true_mean_indexes_healty = function(features_reduced,features_list_sxdx){
+get_cluster_true_mean_indexes_healty = function(features_reduced,features_list_sxdx, mean_left, sd_left, mean_right, sd_right){
   
   representative_clusters_list = get_streamlines_per_clusters_list(features_reduced)
   # Lista di liste: Ogni elemento della list ? un cluster che a sua volta ? una lista
@@ -365,6 +373,11 @@ get_cluster_true_mean_indexes_healty = function(features_reduced,features_list_s
   streamlines_per_cluster = get_streamlines_per_clusters_list(features_list_sxdx)
   # lista di 9 elementi (ogni cluster) divisi a loroa volta in lhs e rhs contententi tutte le streamline del cluster j unendo tutti
   # i pazienti
+  
+  streamlines_per_cluster_left = map(streamlines_per_cluster, extract_data_sx)
+  streamlines_per_cluster_right = map(streamlines_per_cluster, extract_data_dx)
+  var_sx = map(streamlines_per_cluster_left, evaluate_variance, mean_vec=mean_left, sd_vec=sd_left)
+  var_dx = map(streamlines_per_cluster_right, evaluate_variance, mean_vec=mean_right, sd_vec=sd_right)
   
   indexes_per_cluster = get_indexes_streamlines_per_clusters_list(features_list_sxdx)
   # Lista di 9 (clusters) di 20 liste (pazienti) ciascuno divisa in lhs e rhs contenenti: indexes  side cluster
@@ -378,7 +391,7 @@ get_cluster_true_mean_indexes_healty = function(features_reduced,features_list_s
                           find_indexes_per_cluster_j, single_multiple_rep_cluster = "Single_rep_cluster")
   
   final_indexes = map2(indexes_patients,indexes_per_cluster,find_indexes, single_multiple_rep_cluster = "Single_rep_cluster")
-  return (final_indexes)
+  return (list(final_indexes=final_indexes, var_sx=var_sx, var_dx=var_dx))
 }
 
 

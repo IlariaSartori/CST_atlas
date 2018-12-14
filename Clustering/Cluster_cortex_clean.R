@@ -166,31 +166,38 @@ find_min = function(data) {
   return (map_dbl(data, min))
 }
 
+# Create plots variance intracluster patient per patient
 library(fields)
 
+setwd("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/Plot_variance_intracluster")
+# id_pat = 1
+# side = "left"
 
-id_pat = 1
-side = "left"
-if(side=="left") {
-  z_max = max(map_dbl(var_sx_features_reduced[[id_pat]],max))
-  z_min = min(map_dbl(var_sx_features_reduced[[id_pat]],min))
-  # z_max = max(map_dbl(map(var_sx_features_reduced, find_max), max))
-  # z_min = min(map_dbl(map(var_sx_features_reduced, find_min), min))
-  
-} else {
-  z_max = max(map_dbl(var_dx_features_reduced[[id_pat]],max))
-  z_min = min(map_dbl(var_dx_features_reduced[[id_pat]],min))
-  # z_max = max(map_dbl(map(var_dx_features_reduced, find_max), max))
-  # z_min = min(map_dbl(map(var_dx_features_reduced, find_min), min))
+for (side in c("left", "right")) {
+  for (id_pat in 1:20) {
+    if(side=="left") {
+      z_max = max(map_dbl(var_sx_features_reduced[[id_pat]],max))
+      z_min = min(map_dbl(var_sx_features_reduced[[id_pat]],min))
+      # z_max = max(map_dbl(map(var_sx_features_reduced, find_max), max))
+      # z_min = min(map_dbl(map(var_sx_features_reduced, find_min), min))
+      
+    } else {
+      z_max = max(map_dbl(var_dx_features_reduced[[id_pat]],max))
+      z_min = min(map_dbl(var_dx_features_reduced[[id_pat]],min))
+      # z_max = max(map_dbl(map(var_dx_features_reduced, find_max), max))
+      # z_min = min(map_dbl(map(var_dx_features_reduced, find_min), min))
+    }
+    z_lim=c(z_min,z_max)
+    pdf(paste0('Variance_intracluster-Pat_',id_pat,'-Side_',side,'.pdf'))
+    par(mfrow=c(3,3), mai = c(0.1,0.1,0.3,0.1), oma=c(1,1,4,1))
+    for (i in 1:9){
+      if(side=="left") image.plot(var_sx_features_reduced[[id_pat]][[i]], zlim=z_lim, axes=F, main = paste("Cluster",i))
+      else image.plot(var_dx_features_reduced[[id_pat]][[i]], zlim=z_lim, axes=F, main = paste("Cluster",i))
+    }
+    mtext(paste("Patient",id_pat, ", ", "Side ", side), side = 3, line = 1, outer = TRUE, font=2)
+    dev.off()
+  }
 }
-z_lim=c(z_min,z_max)
-quartz()
-par(mfrow=c(3,3), mai = c(0.1,0.1,0.3,0.1), oma=c(1,1,4,1))
-for (i in 1:9){
-  if(side=="left") image.plot(var_sx_features_reduced[[id_pat]][[i]], zlim=z_lim, axes=F, main = paste("Cluster",i))
-  else image.plot(var_dx_features_reduced[[id_pat]][[i]], zlim=z_lim, axes=F, main = paste("Cluster",i))
-}
-mtext(paste("Patient",id_pat, ", ", "Side ", side), side = 3, line = 1, outer = TRUE, font=2)
 
 
 # image.plot(t(var_sx_features_reduced[[1]]), axes = F, xlim = c(0,1), ylim=c(0,1) )
@@ -231,7 +238,6 @@ cst_list_healty = cst_list
 indexes_plot1 = get_cluster_patient_true_mean_indexes_healty (features_reduced_healty, features_list_sxdx_healty)
 
 plot_from_indexes (cst_list_healty, indexes_plot1)
-
 
 ### Verifiche sugli indici
 # healty_tract_lengths = map(cst_list_healty, num_of_streamline_tract_sx_dx)
@@ -284,9 +290,40 @@ features_list_sxdx_healty = features_list_sxdx
 cst_list_healty = cst_list
 #######################################################################################
 
-indexes_plot2 = get_cluster_true_mean_indexes_healty (features_reduced_healty, features_list_sxdx_healty)
+indexes_plot2 = get_cluster_true_mean_indexes_healty (features_reduced_healty, features_list_sxdx_healty, mean_left=mean_left, sd_left=sd_left, mean_right=mean_right, sd_right=sd_right)
 
-plot_from_indexes (cst_list_healty, indexes_plot2)
+plot_from_indexes (cst_list_healty, indexes_plot2$final_indexes)
+
+# Create plots variance intracluster 
+setwd("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/Plot_variance_intracluster")
+# id_pat = 1
+# side = "left"
+var_sx = indexes_plot2$var_sx
+var_dx = indexes_plot2$var_dx
+
+for (side in c("left", "right")) {
+  if(side=="left") {
+    z_max = max(map_dbl(var_sx,max))
+    z_min = min(map_dbl(var_sx,min))
+    # z_max = max(map_dbl(map(var_sx_features_reduced, find_max), max))
+    # z_min = min(map_dbl(map(var_sx_features_reduced, find_min), min))
+    
+  } else {
+    z_max = max(map_dbl(var_dx,max))
+    z_min = min(map_dbl(var_dx,min))
+    # z_max = max(map_dbl(map(var_dx_features_reduced, find_max), max))
+    # z_min = min(map_dbl(map(var_dx_features_reduced, find_min), min))
+  }
+  z_lim=c(z_min,z_max)
+  pdf(paste0('Variance_intracluster','-Side_',side,'.pdf'))
+  par(mfrow=c(3,3), mai = c(0.1,0.1,0.3,0.1), oma=c(1,1,4,1))
+  for (i in 1:9){
+    if(side=="left") image.plot(var_sx[[i]], zlim=z_lim, axes=F, main = paste("Cluster",i))
+    else image.plot(var_dx[[i]], zlim=z_lim, axes=F, main = paste("Cluster",i))
+  }
+  mtext(paste("Side ", side), side = 3, line = 1, outer = TRUE, font=2)
+  dev.off()
+}
 
 
 ### Verifiche sugli indici

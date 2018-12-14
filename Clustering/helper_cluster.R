@@ -183,9 +183,11 @@ get_reduced_tot = function(features, mean_left, sd_left, mean_right, sd_right){
   n_left = length(levels(fac_left))
   tmp_sx = apply(features_left[,1:33], 2, tapply, fac_left, mean)
   
-  std_data_left = sweep(features_left[,1:33], 2, mean_left)  # Subtract the mean
-  std_data_left = sweep(std_data_left, 2, sd_left, FUN = "/")   # Divide by the standard deviation
-  tmp_var_sx = split(std_data_left, features_left$clust)
+  # std_data_left = sweep(features_left[,1:33], 2, mean_left)  # Subtract the mean
+  # std_data_left = sweep(std_data_left, 2, sd_left, FUN = "/")   # Divide by the standard deviation
+  # tmp_var_sx = split(std_data_left, features_left$clust)
+  # var_sx = map(tmp_var_sx, cov)
+  tmp_var_sx = split(as.data.frame(scale(features_left[,1:33])), features_left$clust)
   var_sx = map(tmp_var_sx, cov)
   
   side_sx = rep("left", n_left)
@@ -199,9 +201,11 @@ get_reduced_tot = function(features, mean_left, sd_left, mean_right, sd_right){
   n_right = length(levels(fac_right))
   tmp_dx = apply(features_right[,1:33], 2, tapply, fac_right, mean)
   
-  std_data_right = sweep(features_right[,1:33], 2, mean_right)  # Subtract the mean
-  std_data_right = sweep(std_data_right, 2, sd_right, FUN = "/")   # Divide by the standard deviation
-  tmp_var_dx = split(std_data_right, features_right$clust)
+  # std_data_right = sweep(features_right[,1:33], 2, mean_right)  # Subtract the mean
+  # std_data_right = sweep(std_data_right, 2, sd_right, FUN = "/")   # Divide by the standard deviation
+  # tmp_var_dx = split(std_data_right, features_right$clust)
+  # var_dx = map(tmp_var_dx, cov)
+  tmp_var_dx = split(as.data.frame(scale(features_right[,1:33])), features_right$clust)
   var_dx = map(tmp_var_dx, cov)
   
   side_dx = rep("right", n_right)
