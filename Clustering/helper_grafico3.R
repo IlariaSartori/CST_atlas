@@ -122,3 +122,13 @@ plot_from_indexes = function (cst_list_healty, indexes_plot) {
     }
   }
 }
+
+# NEW : 14/12/18
+get_streamline = function(row_df, side, cst_list){
+  pat = row_df[2]
+  idx = row_df[1]
+  if(side == "left")  stream = cst_list[[pat]]$lhs$Streamlines[[idx]]
+  else if (side == "right") stream = cst_list[[pat]]$rhs$Streamlines[[idx]]
+  else stop("Error side")
+  return (stream)
+}

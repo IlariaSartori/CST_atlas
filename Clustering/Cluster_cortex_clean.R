@@ -271,11 +271,16 @@ plot_from_indexes (cst_list_healty, indexes_plot1)
 ######################################################################################
 library(rgl)
 setwd("/Users/ILARIASARTORI/Politecnico di Milano/Luca Torriani - Project StatApp/RData")
+setwd("C:/Users/User/OneDrive - Politecnico di Milano/Project StatApp/RData")
+
 load("features_patients_9.RData")
 load("features_patients_reduced_9.RData")
 
 source("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/helper_cluster.R")
 source("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/helper_cluster_plot.R")
+source("C:/Users/User/Programming/CST_atlas/Clustering/helper_cluster.R")
+source("C:/Users/User/Programming/CST_atlas/Clustering/helper_cluster_plot.R")
+
 
 # Loading tracts
 load("cst_list.RData")
@@ -364,13 +369,18 @@ for (side in c("left", "right")) {
 ################################# Terzo grafico ##########################################
 ######################################################################################
 setwd("~/Desktop/Politecnico di Milano/Luca Torriani - Project StatApp/RData")
+setwd("C:/Users/User/OneDrive - Politecnico di Milano/Project StatApp/RData")
+
 load("features_patients_reduced_9.RData")
 load("features_patients_9.RData")
 load("cst_list.RData")
-# load("../RData/tensor_list.RData")
 
 source("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/helper_cluster.R")
 source("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/helper_grafico3.R")
+source("C:/Users/User/Programming/CST_atlas/Clustering/helper_grafico3.R")
+source("C:/Users/User/Programming/CST_atlas/Clustering/helper_cluster.R")
+source("C:/Users/User/Programming/CST_atlas/Clustering/helper_cluster_plot.R")
+
 
 # load ("../RData/outliers.RData")    # Indici outliers
 # outliers_sx lista di 20 vettori contenenti gli indici delle streamline individuate come outliers 
@@ -378,21 +388,21 @@ source("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/helper_gra
 # outliers_dx lista di 20 vettori contenenti gli indici delle streamline individuate come outliers 
 # nel tratto dx dei 20 pazienti
 
-# NEW: 21/11/18 (per ora non esiste) 
-load ("../RData/list_tensors.RData") # pensavo di usarla per recuperare il numero originale di streamlines prima di
+# NEW: 21/11/18 (non esiste) 
+# load ("../RData/list_tensors.RData") # pensavo di usarla per recuperare il numero originale di streamlines prima di
                                     # rimuovere gli outliers
 # HP: lista di 20/21 elementi (dipende da malato): 
 # - ciascun paziente ha due campi (lhs, rhs), ciascuno dei quali e' a sua volta una lista di lunghezza (n_stream_left, n_stream_right)
 #   che a sua volta e' una lista di 50 tensori (uno per punto)
 
-#NEW: 20/11/18
+#NEW: 20/11/18 inutile
 # Da testare
-num_stream_pat_side_df =  do.call(rbind.data.frame, map(list_tensors, num_of_streamline_from_tensor_list_cst))
-num_stream_pat_side = list( lhs = as.list(num_stream_pat_side_df[,1]),  rhs = as.list(num_stream_pat_side_df[,2]))
-####
-
-old_indexes = find_original_index_representative(indexes_plot1, outliers_sx, outliers_dx, num_stream_pat_side)
-list_mean_tensors = mean_tensors(old_indexes, list_tensors)
+# num_stream_pat_side_df =  do.call(rbind.data.frame, map(list_tensors, num_of_streamline_from_tensor_list_cst))
+# num_stream_pat_side = list( lhs = as.list(num_stream_pat_side_df[,1]),  rhs = as.list(num_stream_pat_side_df[,2]))
+# ####
+# 
+# old_indexes = find_original_index_representative(indexes_plot1, outliers_sx, outliers_dx, num_stream_pat_side)
+# list_mean_tensors = mean_tensors(old_indexes, list_tensors)
 
 
 # PROVA
@@ -412,4 +422,33 @@ list_mean_tensors = mean_tensors(old_indexes, list_tensors)
 # 
 # 
 # old_indexes = find_original_index_representative(indexes_plot1_tmp, outliers_sx_tmp, outliers_dx_tmp, num_stream_pat_side)
+
+
+# 14/12
+library(rgl)
+
+features_reduced_healty = features_reduced
+features_list_sxdx_healty = features_list_sxdx
+cst_list_healty = cst_list
+
+indexes_plot3 = get_cluster_true_mean_indexes_healty (features_reduced_healty, features_list_sxdx_healty, mean_left=mean_left, sd_left=sd_left, mean_right=mean_right, sd_right=sd_right)
+
+indexes = indexes_plot2$final_indexes
+labels_df = do.call(rbind, map(indexes,unlist))
+df_left = labels_df[,c(1,2)]
+df_right = labels_df[,c(3,4)]
+stream_left = apply(df_left, 1, get_streamline, side = "left", cst_list_healty)
+stream_right = apply(df_right, 1, get_streamline, side = "right", cst_list_healty)
+streams = do.call(c,list(stream_left,stream_right))
+
+colours =rainbow(9)
+plot(streams[[1]], plot_microstructure = TRUE, col = colours[1])
+j= 2
+for (i in 2:length(streams)){
+  if(j==(length(streams)/2+1)) j = 1
+  plot(streams[[i]], plot_microstructure = TRUE, new_window = F, col=colours[j])
+  j =j+1
+} 
+
+
 
