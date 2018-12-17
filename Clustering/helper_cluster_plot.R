@@ -81,49 +81,6 @@ get_clusterMean_streamline = function(left_right_list){
 }
 
 
-
-
-
-# #______________________________________________________________________________________
-# 
-# 
-# 
-# num_of_streamline_in_cluster_j = function (features_final, j) {
-#   n_lhs = dim(features_final[which(features_final$clust == j & features_final$side == "left"),])[1]
-#   n_rhs = dim(features_final[which(features_final$clust == j & features_final$side == "right"),])[1]
-#   return (data.frame(n_lhs,n_rhs,clust = j))
-# }
-# 
-# 
-# get_number_of_streamline = function(features_list_sxdx){
-#   n_cluster = max((features_list_sxdx[[1]]$clust))
-#   number_list = list()
-#   for(i in 1:n_cluster){
-#     assign(paste("cluster_",i,sep=""),map_df(features_list_sxdx,num_of_streamline_in_cluster_j,i))
-#     number_list [[i]] =  eval(parse(text=paste("cluster_",i,sep ="")))
-#   }
-#   
-#   return (number_list)
-# }
-# 
-# 
-# num_streamline_after_outliers = get_number_of_streamline(features_list_sxdx)
-# # Lista con 9 elementi (ogni cluster) con la seguente forma
-# # [[7]]
-# #     n_lhs  n_rhs  clust
-# #  1   310    269     7
-# #  2   241    210     7
-# #  3   103    537     7
-# # ..
-# # 20
-# #___________________________________________________________________________
-
-
-
-
-
-
-
 # Restituisce un dataframe con 3 variabili: indexes, side e clust.
 # - indexes: indici delle features che stanno nel cluster j (relativamente al cluster e alla side sx-dx)
 get_indexes_streamline_in_cluster_j = function (features, j) {
@@ -160,57 +117,6 @@ get_indexes_streamlines_per_clusters_list = function(features_list_sxdx){
   clusters_list = map(clusters_list, map, split_left_right)
   return (clusters_list)
 }
-
-
-
-
-
-#______________________________________________________________________________________
-
-
-##### RIASSUMENDO: 
-
-## representative_clusters_list 
-# Lista di liste: Ogni elemento della list ? un cluster che a sua volta ? una lista
-# contente lhs e rhs (ciascuno dei due ? un dataframe con le streamlines rappresentanti)
-
-## clusterMean_streamlines  !!! Meglio farlo diventare lista di liste
-# Lista di 9 cluster, ciascun elemento ? diviso in lhs e rhs e ciascuno contiene la streamline media rappresentante
-
-## num_streamline_after_outliers 
-# Lista con 9 elementi (ogni cluster) con la seguente forma
-# [[7]]
-#     n_lhs  n_rhs  clust
-# 1   310    269     7
-# 2   241    210     7
-# 3   103    537     7
-
-
-## streamlines_per_cluster 
-# lista di 9 elementi (ogni cluster) divisi a loro volta in lhs e rhs contententi tutte le streamline del cluster j unendo tutti i pazienti
-
-## indexes_per_cluster
-# Lista di 9 (clusters) di 20 liste (pazienti) ciascuno divisa in lhs e rhs contenenti: indexes  side cluster (rispetto al singolo paziente)
-#       indexes    side  clust
-# 125    2153     right     1
-# 126    2154     right     1
-# 127    2155     right     1
-# 128    2156     right     1
-# 129    2157     right     1
-# 130    2158     right     1
-
-# Obiettivo: Trovare in streamlines_per_cluster le streamline piu vicine a clusterMean_streamlines
-
-#______________________________________________________________________________________
-
-
-
-
-
-
-
-
-
 
 
 # Data una streamline fittizia (centroide) restituisce una lista con 
@@ -351,17 +257,40 @@ extract_data_sx = function (data) {
 extract_data_dx = function (data) {
   return(data$rhs)
 }
+
 evaluate_variance = function(features_clusterj, mean_vec, sd_vec) {
   std_data = sweep(features_clusterj[,1:33], 2, mean_vec)  # Subtract the mean
   std_data = sweep(std_data, 2, sd_vec, FUN = "/")   # Divide by the standard deviation
   return(cov(std_data))
 }
+
+extract_centroid = function (data) {
+  return(data$centroid)
+}
+
+extract_var_sx = function (data) {
+  return(data$var_sx)
+}
+
+extract_var_dx = function (data) {
+  return(data$var_dx)
+}
+
+find_max = function(data) {
+  return (map_dbl(data, max))
+}
+
+find_min = function(data) {
+  return (map_dbl(data, min))
+}
+
+
 # Date features_reduced e features_list_sxdx (solo pazienti sani) restituisce
 # una lista di 9 (cluster), dove ogni elemento è una lista di 2 componenti:
 # - idx: Indice della streamline reale (rispetto a un paziente e alla side) più vicina (distanza L2 delle features)
 #        alla streamline fittizia media di quel cluster (media mettendo insieme tutti i pazienti)
 # - patient: Paziente a cui appartiene la streamline rappresentante
-get_cluster_true_mean_indexes_healty = function(features_reduced,features_list_sxdx, mean_left, sd_left, mean_right, sd_right){
+get_cluster_true_mean_indexes_healthy = function(features_reduced,features_list_sxdx, mean_left, sd_left, mean_right, sd_right){
   
   representative_clusters_list = get_streamlines_per_clusters_list(features_reduced)
   # Lista di liste: Ogni elemento della list ? un cluster che a sua volta ? una lista
@@ -385,7 +314,7 @@ get_cluster_true_mean_indexes_healty = function(features_reduced,features_list_s
   
   # max(indexes_per_cluster[[1]][[1]]$rhs$indexes)   # 4460 
   # # Attenzione: la colonna degli indici viene letta come un factor
-  # healty_tract_lengths_matrix[1,2]   # 3126
+  # healthy_tract_lengths_matrix[1,2]   # 3126
   
   indexes_patients = map2(clusterMean_streamlines,streamlines_per_cluster, 
                           find_indexes_per_cluster_j, single_multiple_rep_cluster = "Single_rep_cluster")
@@ -401,7 +330,7 @@ get_cluster_true_mean_indexes_healty = function(features_reduced,features_list_s
 # - idx: Vettore di indici delle streamline reale (rispetto a un paziente e alla side) più vicina (distanza L2 delle features)
 #        alla streamline fittizia media di quel cluster per quel paziente 
 # - patient: Vettore dei pazienti
-get_cluster_patient_true_mean_indexes_healty = function(features_reduced,features_list_sxdx){
+get_cluster_patient_true_mean_indexes_healthy = function(features_reduced,features_list_sxdx){
   n_patients = length(features_list_sxdx)
   
   clusterpatientMean_streamlines = get_streamlines_per_clusters_patient_list (features_reduced, n_patients)
@@ -431,39 +360,7 @@ get_cluster_patient_true_mean_indexes_healty = function(features_reduced,feature
   return (final_indexes)
 }
 
-
-
-##### GRAFICO 
-# open3d()
-# primo=1
-# n_cluster = 9
-# for (j in 1:n_cluster){   # Per ogni cluster
-#   patient_sx =  index_rep_streamline_left[[j]] [[1]]
-#   ind_stream_sx = index_rep_streamline_left[[j]] [[2]]
-#   x= cst_list[[patient_sx]][[1]]$data[[ind_stream_sx]]$x
-#   y= cst_list[[patient_sx]][[1]]$data[[ind_stream_sx]]$y
-#   z= cst_list[[patient_sx]][[1]]$data[[ind_stream_sx]]$z
-#       
-#   X=cbind(x,y,z)
-#   lines3d(X, asp=1, size=0.5, col=rainbow(n_cluster)[j]) 
-#   
-#   patient_dx =  index_rep_streamline_right[[j]] [[1]]
-#   ind_stream_dx = index_rep_streamline_right[[j]] [[2]]
-#   x= cst_list[[patient_dx]][[2]]$data[[ind_stream_dx]]$x
-#   y= cst_list[[patient_dx]][[2]]$data[[ind_stream_dx]]$y
-#   z= cst_list[[patient_dx]][[2]]$data[[ind_stream_dx]]$z
-# 
-#   X=cbind(x,y,z)
-#   lines3d(X, asp=1, size=0.5, col=rainbow(n_cluster)[j])
-# 
-#   if (primo) {
-#         axes3d()
-#         title3d(xlab='x', ylab='y', zlab='z')
-#         primo=0
-#       }
-# }
-# 
-plot_from_indexes = function (cst_list_healty, indexes_plot) {
+plot_from_indexes = function (cst_list_healthy, indexes_plot) {
   open3d()
   primo=1
   n_cluster = length(indexes_plot)
@@ -472,45 +369,14 @@ plot_from_indexes = function (cst_list_healty, indexes_plot) {
       patient = indexes_plot[[j]][[s]]$patient
       index = indexes_plot[[j]][[s]]$idx
       for (i in 1: length(patient)) {
-        x= cst_list_healty[[patient[i]]][[s]]$Streamlines[[index[i]]]$x
-        y= cst_list_healty[[patient[i]]][[s]]$Streamlines[[index[i]]]$y
-        z= cst_list_healty[[patient[i]]][[s]]$Streamlines[[index[i]]]$z
+        x= cst_list_healthy[[patient[i]]][[s]]$Streamlines[[index[i]]]$x
+        y= cst_list_healthy[[patient[i]]][[s]]$Streamlines[[index[i]]]$y
+        z= cst_list_healthy[[patient[i]]][[s]]$Streamlines[[index[i]]]$z
         
         X = cbind(x,y,z)
         
         lines3d(X, asp=1, size=0.5, col=rainbow(n_cluster)[j],axes=FALSE)
         
-        if (primo) {
-          axes3d()
-          title3d(xlab='x', ylab='y', zlab='z')
-          primo=0
-        }
-      }
-    }
-  }
-}
-
-plot_3 = function (cst_list_healty, indexes_plot, list_mean_tensors) {
-  open3d()
-  primo=1
-  n_cluster = length(indexes_plot)
-  for (j in 1:n_cluster){
-    for (s in 1:2){   # Left e right
-      patient = indexes_plot[[j]][[s]]$patient
-      index = indexes_plot[[j]][[s]]$idx
-      for (i in 1: length(patient)) {
-        x= cst_list_healty[[patient[i]]][[s]]$data[[index[i]]]$x
-        y= cst_list_healty[[patient[i]]][[s]]$data[[index[i]]]$y
-        z= cst_list_healty[[patient[i]]][[s]]$data[[index[i]]]$z
-        
-        X = cbind(x,y,z)
-        
-        lines3d(X, asp=1, size=0.5, col=rainbow(n_cluster)[j],axes=FALSE)
-        for(k in 1:50){
-          if(k%%5){
-            rgl::ellipse3d(list_mean_tensors[[j]][[s]][[k]], centre = c(x[k], y[k], z[k]), col=rainbow(n_cluster)[j])
-          }
-        }
         if (primo) {
           axes3d()
           title3d(xlab='x', ylab='y', zlab='z')
