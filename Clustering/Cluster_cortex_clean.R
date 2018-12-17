@@ -172,24 +172,21 @@ find_min = function(data) {
 library(fields)
 
 setwd("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/Plot_variance_intracluster")
+setwd("C:/Users/User/Programming/CST_atlas/Clustering/Plot_variance_intracluster")
+
 # id_pat = 1
 # side = "left"
 
 for (side in c("left", "right")) {
   for (id_pat in 1:20) {
-    if(side=="left") {
-      z_max = max(map_dbl(var_sx_features_reduced[[id_pat]],max))
-      z_min = min(map_dbl(var_sx_features_reduced[[id_pat]],min))
-      # z_max = max(map_dbl(map(var_sx_features_reduced, find_max), max))
-      # z_min = min(map_dbl(map(var_sx_features_reduced, find_min), min))
-      
-    } else {
-      z_max = max(map_dbl(var_dx_features_reduced[[id_pat]],max))
-      z_min = min(map_dbl(var_dx_features_reduced[[id_pat]],min))
-      # z_max = max(map_dbl(map(var_dx_features_reduced, find_max), max))
-      # z_min = min(map_dbl(map(var_dx_features_reduced, find_min), min))
-    }
+    z_max_left = max(map_dbl(var_sx_features_reduced[[id_pat]],max))
+    z_min_left =  min(map_dbl(var_sx_features_reduced[[id_pat]],min))
+    z_max_right = max(map_dbl(var_dx_features_reduced[[id_pat]],max))
+    z_min_right = min(map_dbl(var_dx_features_reduced[[id_pat]],min))
+    z_max = max(z_max_left, z_max_right)
+    z_min = min(z_min_left, z_min_right)
     z_lim=c(z_min,z_max)
+    
     pdf(paste0('Variance_intracluster-Pat_',id_pat,'-Side_',side,'.pdf'))
     par(mfrow=c(3,3), mai = c(0.1,0.1,0.3,0.1), oma=c(1,1,4,1))
     for (i in 1:9){
@@ -212,8 +209,10 @@ for (side in c("left", "right")) {
 ########################## Primo grafico #############################################
 ######################################################################################
 library(rgl)
-setwd("~/Desktop//Politecnico di Milano/Luca Torriani - Project StatApp/RData")
+setwd("~/Desktop/Politecnico di Milano/Luca Torriani - Project StatApp/RData")
 setwd("/Users/ILARIASARTORI/Politecnico di Milano/Luca Torriani - Project StatApp/RData")
+setwd("C:/Users/User/OneDrive - Politecnico di Milano/Project StatApp/RData")
+
 load("features_patients_9.RData")
 load("features_patients_reduced_9.RData")
 
@@ -221,6 +220,8 @@ source("~/Desktop/OneDrive - Politecnico di Milano/CST_atlas/Clustering/helper_c
 source("~/Desktop/OneDrive - Politecnico di Milano/CST_atlas/Clustering/helper_cluster_plot.R")
 source("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/helper_cluster.R")
 source("/Users/ILARIASARTORI/Desktop/Poli/IVanno/CST_atlas/Clustering/helper_cluster_plot.R")
+source("C:/Users/User/Programming/CST_atlas/Clustering/helper_cluster.R")
+source("C:/Users/User/Programming/CST_atlas/Clustering/helper_cluster_plot.R")
 
 # Loading tracts
 load("cst_list.RData")
@@ -426,14 +427,15 @@ source("C:/Users/User/Programming/CST_atlas/Clustering/helper_cluster_plot.R")
 
 # 14/12
 library(rgl)
-
+library(fiber)
+library(dplyr)
 features_reduced_healty = features_reduced
 features_list_sxdx_healty = features_list_sxdx
 cst_list_healty = cst_list
 
 indexes_plot3 = get_cluster_true_mean_indexes_healty (features_reduced_healty, features_list_sxdx_healty, mean_left=mean_left, sd_left=sd_left, mean_right=mean_right, sd_right=sd_right)
 
-indexes = indexes_plot2$final_indexes
+indexes = indexes_plot3$final_indexes
 labels_df = do.call(rbind, map(indexes,unlist))
 df_left = labels_df[,c(1,2)]
 df_right = labels_df[,c(3,4)]
@@ -442,11 +444,11 @@ stream_right = apply(df_right, 1, get_streamline, side = "right", cst_list_healt
 streams = do.call(c,list(stream_left,stream_right))
 
 colours =rainbow(9)
-plot(streams[[1]], plot_microstructure = TRUE, col = colours[1])
+plot(streams[[1]], plot_microstructure = TRUE, col = colours[1], scale = 6) 
 j= 2
 for (i in 2:length(streams)){
   if(j==(length(streams)/2+1)) j = 1
-  plot(streams[[i]], plot_microstructure = TRUE, new_window = F, col=colours[j])
+  plot(streams[[i]], plot_microstructure = TRUE, new_window = F, col=colours[j], scale = 6)
   j =j+1
 } 
 
